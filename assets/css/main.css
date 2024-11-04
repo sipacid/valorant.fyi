@@ -12,6 +12,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 @keyframes scroll {
@@ -139,3 +140,30 @@ body {
     border-radius: 10%;
 }
 
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #201c1c;
+    text-align: start;
+    color: rgb(229 231 235);
+    border-top: 1px solid rgb(229 231 235);
+}
+
+footer div {
+    text-wrap: pretty;
+    padding: 20px;
+    font-weight: 300;
+}
+
+footer a {
+    color: rgb(129 140 248);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+footer a:hover {
+    text-decoration: underline;
+    color: rgb(165 180 252);
+}
