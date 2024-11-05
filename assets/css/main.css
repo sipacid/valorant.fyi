@@ -160,3 +160,9 @@ footer a:hover {
     text-decoration: underline;
     color: rgb(165 180 252);
 }
+
+.hidden {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s 0.1s, opacity 0.1s linear;
+}

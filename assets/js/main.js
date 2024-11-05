@@ -30,9 +30,14 @@ const imgDict = {
 const timeUntilChosen = 3000; // in milliseconds
 const checkInterval = 100; // in milliseconds
 let intervalId;
+const modalAgentName = document.getElementById('agent-name');
+const modalAgentImg = document.getElementById('agent-image');
+const modal = document.getElementById('modal');
+const agentsListElement = document.getElementById('agents');
+const raffleButton = document.getElementById('btn');
+
 
 function populateAgents() {
-    const agentsListElement = document.getElementById('agents');
     const imgKeys = Object.keys(imgDict);
     const totalImages = 102;
 
@@ -82,37 +87,33 @@ function checkIntersectionWithLine() {
 }
 
 function showModal(chosenAgent) {
-    const modal = document.getElementById('modal');
+    modalAgentName.textContent = chosenAgent;
+    modalAgentImg.src = "assets/img/agents-full/" + chosenAgent.toLowerCase() + ".webp";
+    modal.classList.remove('hidden');
     modal.style.display = 'flex';
-
-    const agentName = document.getElementById('agent-name');
-    const agentImg = document.getElementById('agent-image');
-    agentName.textContent = chosenAgent;
-    agentImg.src = "assets/img/agents-full/" + chosenAgent.toLowerCase() + ".webp";
 }
 
 
 function closeModal() {
-    const modal = document.getElementById('modal');
-    modal.style.display = 'none';
+    modal.classList.add('hidden');
     resetRaffle();
 }
 
 function resetRaffle() {
-    const agentsDiv = document.getElementById('agents');
-    agentsDiv.innerHTML = '<div id="red-line"></div>';
+    agentsListElement.innerHTML = '<div id="red-line"></div>';
     counter = 0;
     if (intervalId) {
         clearInterval(intervalId);
     }
     intervalId = null;
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 500);
 }
 
 async function startRaffle() {
-    const raffleButton = document.getElementById('btn');
     raffleButton.disabled = true;
     await resetRaffle();
-
     populateAgents();
     intervalId = setInterval(checkIntersectionWithLine, checkInterval);
     setTimeout(() => {
