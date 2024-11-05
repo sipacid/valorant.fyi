@@ -29,59 +29,73 @@ const imgDict = {
 
 const timeUntilChosen = 3000; // in milliseconds
 const checkInterval = 100; // in milliseconds
-let chosenAgent;
 let intervalId;
 
-    function populateAgents() {
-    const agentsDiv = document.getElementById('agents');
+function populateAgents() {
+    const agentsListElement = document.getElementById('agents');
     const imgKeys = Object.keys(imgDict);
     const totalImages = 102;
 
     for (let i = 0; i < totalImages; i++) {
-        const randomKey = imgKeys[Math.floor(Math.random() * imgKeys.length)];
+        const randomAgent = imgKeys[Math.floor(Math.random() * imgKeys.length)];
+
+        const intersectObject = document.createElement('div');
+        intersectObject.classList.add('intersect_object');
+        intersectObject.id = randomAgent;
+
         const imgElement = document.createElement('img');
-        imgElement.src = imgDict[randomKey];
-        imgElement.alt = randomKey;
-        agentsDiv.appendChild(imgElement);
+        imgElement.src = imgDict[randomAgent];
+        imgElement.alt = randomAgent;
+
+        intersectObject.appendChild(imgElement);
+        agentsListElement.appendChild(intersectObject);
     }
 }
+
 let counter = 0;
 
-function checkIntersectionWithRedLine() {
-    const redLine = document.getElementById('red-line');
-    const redLineRect = redLine.getBoundingClientRect();
-    const images = document.querySelectorAll('#agents > img');
-    images.forEach(img => {
-        const imgRect = img.getBoundingClientRect();
+function checkIntersectionWithLine() {
+    const intersectLine = document.getElementById('red-line');
+    const intersectLineRect = intersectLine.getBoundingClientRect();
+    const agents = document.querySelectorAll('#agents > .intersect_object');
+    agents.forEach(agent => {
+        const imgRect = agent.getBoundingClientRect();
         // Check if the image is intersecting the red line
         if (
-            imgRect.left < redLineRect.left &&
-            imgRect.right > redLineRect.left && counter < (timeUntilChosen / checkInterval)
+            imgRect.left < intersectLineRect.left &&
+            imgRect.right > intersectLineRect.left &&
+            counter < (timeUntilChosen / checkInterval
+            )
         ) {
             counter++;
-        } else if (imgRect.left < redLineRect.left &&
-            imgRect.right > redLineRect.left && counter === (timeUntilChosen / checkInterval)) {
-            // img.classList.add('chosen-agent');
-            console.log(`${img.alt}`);
+        } else if (
+            imgRect.left < intersectLineRect.left &&
+            imgRect.right > intersectLineRect.left &&
+            counter === (timeUntilChosen / checkInterval
+            )
+        ) {
             clearInterval(intervalId);
-            intervalId = null;
-            chosenAgent = img.alt;
-            const modal = document.getElementById('modal');
-            modal.style.display = 'block';
-            const agentName = document.getElementById('agent-name');
-            agentName.textContent = chosenAgent;
-            const agentImg = document.getElementById('agent-image');
-            agentImg.src = "assets/img/agents-full/" + chosenAgent.toLowerCase() + ".webp";
-            console.log(agentImg.src);
-
+            showModal(agent.id);
             counter++;
         }
     });
 }
 
+function showModal(chosenAgent) {
+    const modal = document.getElementById('modal');
+    modal.style.display = 'flex';
+
+    const agentName = document.getElementById('agent-name');
+    const agentImg = document.getElementById('agent-image');
+    agentName.textContent = chosenAgent;
+    agentImg.src = "assets/img/agents-full/" + chosenAgent.toLowerCase() + ".webp";
+}
+
+
 function closeModal() {
     const modal = document.getElementById('modal');
     modal.style.display = 'none';
+    resetRaffle();
 }
 
 function resetRaffle() {
@@ -91,6 +105,7 @@ function resetRaffle() {
     if (intervalId) {
         clearInterval(intervalId);
     }
+    intervalId = null;
 }
 
 async function startRaffle() {
@@ -99,7 +114,7 @@ async function startRaffle() {
     await resetRaffle();
 
     populateAgents();
-    intervalId = setInterval(checkIntersectionWithRedLine, checkInterval);
+    intervalId = setInterval(checkIntersectionWithLine, checkInterval);
     setTimeout(() => {
         raffleButton.disabled = false;
     }, timeUntilChosen);
