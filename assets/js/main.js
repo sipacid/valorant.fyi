@@ -108,6 +108,8 @@ function resetRaffle() {
     intervalId = null;
     setTimeout(() => {
         modal.style.display = 'none';
+        modalAgentImg.src = '';
+        modalAgentName.textContent = '';
     }, 500);
 }
 
