@@ -1,4 +1,7 @@
-@import url('https://fonts.cdnfonts.com/css/valorant');
+@font-face {
+    font-family: VALORANT;
+    src: url(../fonts/VALORANT-Regular.ttf);
+}
 
 :root {
     --transform-length: translateX(calc(-122px * 85));
@@ -122,7 +125,7 @@ body {
     color: white;
     font-size: 30px;
     text-align: center;
-    font-family: 'VALORANT', sans-serif;
+    font-family: VALORANT, sans-serif;
 }
 
 #agent-image {
