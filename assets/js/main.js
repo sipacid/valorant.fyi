@@ -1,4 +1,13 @@
-// Dictionary of image sources and alt texts
+const CONFIG = {
+  checkInterval: 8,
+  agentsPerRound: 1000,
+  modalFadeTime: 500,
+  scrollSpeed: 6,
+  easeEffect: "ease-in-out",
+  intersectionDistance: 100,
+};
+
+/** @type {Object.<string, string>} */
 const imgDict = {
   Astra: "assets/img/icons/astra-icon.webp",
   Breach: "assets/img/icons/breach-icon.webp",
@@ -27,22 +36,37 @@ const imgDict = {
   Yoru: "assets/img/icons/yoru-icon.webp",
 };
 
-const timeUntilChosen = 3000; // in milliseconds
-const checkInterval = 100; // in milliseconds
-let intervalId;
-const modalAgentName = document.getElementById("agent-name");
-const modalAgentImg = document.getElementById("agent-image");
-const modal = document.getElementById("modal");
-const agentsListElement = document.getElementById("agents");
-const raffleButton = document.getElementById("btn");
+/** @type {Object.<string, HTMLElement>} */
+const elements = {
+  modalAgentName: document.getElementById("agent-name"),
+  modalAgentImg: document.getElementById("agent-image"),
+  modal: document.getElementById("modal"),
+  agentsList: document.getElementById("agents"),
+  raffleButton: document.getElementById("btn"),
+  centerLine: document.querySelector(".center-line"),
+};
 
-function populateAgents() {
+let intervalId = null;
+let counter = 0;
+let isRaffleRunning = false;
+
+/**
+ * @returns {void}
+ * @throws {Error} If required DOM elements are not found
+ */
+function validateElements() {
+  for (const [key, element] of Object.entries(elements)) {
+    if (!element) throw new Error(`Required element ${key} not found`);
+  }
+}
+
+async function populateAgents() {
+  const fragment = document.createDocumentFragment();
   const imgKeys = Object.keys(imgDict);
-  const totalImages = 102;
+  const imageLoadPromises = [];
 
-  for (let i = 0; i < totalImages; i++) {
+  for (let i = 0; i < CONFIG.agentsPerRound; i++) {
     const randomAgent = imgKeys[Math.floor(Math.random() * imgKeys.length)];
-
     const intersectObject = document.createElement("div");
     intersectObject.classList.add("intersect_object");
     intersectObject.id = randomAgent;
@@ -51,71 +75,126 @@ function populateAgents() {
     imgElement.src = imgDict[randomAgent];
     imgElement.alt = randomAgent;
 
+    const loadPromise = new Promise((resolve, reject) => {
+      imgElement.onload = resolve;
+      imgElement.onerror = reject;
+    });
+    imageLoadPromises.push(loadPromise);
+
     intersectObject.appendChild(imgElement);
-    agentsListElement.appendChild(intersectObject);
+    fragment.appendChild(intersectObject);
+  }
+
+  elements.agentsList.innerHTML = "";
+  elements.agentsList.appendChild(fragment);
+
+  await Promise.all(imageLoadPromises);
+}
+
+function checkIntersectionWithLine() {
+  if (!isRaffleRunning) return;
+
+  const firstAgent = document.querySelector(".intersect_object");
+  const progress = getAnimationProgress(firstAgent);
+
+  if (progress < 0.99) return;
+
+  const centerX = window.innerWidth / 2;
+  const agents = document.querySelectorAll(".intersect_object");
+  let closestAgent = null;
+  let minDistance = Infinity;
+
+  agents.forEach((agent) => {
+    const rect = agent.getBoundingClientRect();
+    const distance = Math.abs(rect.left + rect.width / 2 - centerX);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestAgent = { element: agent, distance };
+    }
+  });
+
+  if (closestAgent && closestAgent.distance < 50) {
+    closestAgent.element.classList.add("active");
+    clearInterval(intervalId);
+    isRaffleRunning = false;
+    showModal(closestAgent.element.id);
   }
 }
 
-let counter = 0;
-
-function checkIntersectionWithLine() {
-  const intersectLine = document.getElementById("red-line");
-  const intersectLineRect = intersectLine.getBoundingClientRect();
-  const agents = document.querySelectorAll("#agents > .intersect_object");
-  agents.forEach((agent) => {
-    const imgRect = agent.getBoundingClientRect();
-    // Check if the image is intersecting the red line
-    if (
-      imgRect.left < intersectLineRect.left &&
-      imgRect.right > intersectLineRect.left &&
-      counter < timeUntilChosen / checkInterval
-    ) {
-      counter++;
-    } else if (
-      imgRect.left < intersectLineRect.left &&
-      imgRect.right > intersectLineRect.left &&
-      counter === timeUntilChosen / checkInterval
-    ) {
-      clearInterval(intervalId);
-      showModal(agent.id);
-      counter++;
-    }
-  });
+function getAnimationProgress(element) {
+  if (!element) return 1;
+  const animation = element.getAnimations()[0];
+  if (!animation) return 1;
+  return animation.currentTime / animation.effect.getComputedTiming().duration;
 }
 
 function showModal(chosenAgent) {
-  modalAgentName.textContent = chosenAgent;
-  modalAgentImg.src =
-    "assets/img/agents-full/" + chosenAgent.toLowerCase() + ".webp";
-  modal.classList.remove("hidden");
-  modal.style.display = "flex";
+  if (!chosenAgent || elements.modal.style.display === "flex") return;
+
+  elements.modalAgentName.textContent = chosenAgent;
+  elements.modalAgentImg.src = `assets/img/agents-full/${chosenAgent.toLowerCase()}.webp`;
+  elements.modal.classList.remove("hidden");
+  elements.modal.style.display = "flex";
 }
 
-function closeModal() {
-  modal.classList.add("hidden");
+const closeModal = () => {
+  elements.modal.classList.add("hidden");
   resetRaffle();
-}
+};
 
 function resetRaffle() {
-  agentsListElement.innerHTML = '<div id="red-line"></div>';
+  elements.agentsList.innerHTML = "";
+  elements.centerLine.style.visibility = "hidden";
+  elements.centerLine.style.opacity = "0";
   counter = 0;
   if (intervalId) {
     clearInterval(intervalId);
+    intervalId = null;
   }
-  intervalId = null;
+
   setTimeout(() => {
-    modal.style.display = "none";
-    modalAgentImg.src = "";
-    modalAgentName.textContent = "";
-  }, 500);
+    elements.modal.style.display = "none";
+    elements.modalAgentImg.src = "";
+    elements.modalAgentName.textContent = "";
+  }, CONFIG.modalFadeTime);
 }
 
 async function startRaffle() {
-  raffleButton.disabled = true;
-  await resetRaffle();
-  populateAgents();
-  intervalId = setInterval(checkIntersectionWithLine, checkInterval);
-  setTimeout(() => {
-    raffleButton.disabled = false;
-  }, timeUntilChosen);
+  if (isRaffleRunning) return;
+
+  try {
+    isRaffleRunning = true;
+    elements.raffleButton.disabled = true;
+    elements.agentsList.innerHTML = "";
+    elements.centerLine.style.visibility = "visible";
+    elements.centerLine.style.opacity = "1";
+
+    await populateAgents();
+
+    requestAnimationFrame(() => {
+      document.querySelectorAll(".intersect_object").forEach((div) => {
+        div.style.animation = `scroll ${CONFIG.scrollSpeed}s ${CONFIG.easeEffect} forwards`;
+      });
+      intervalId = setInterval(checkIntersectionWithLine, CONFIG.checkInterval);
+    });
+
+    setTimeout(
+      () => {
+        if (isRaffleRunning) {
+          checkIntersectionWithLine();
+        }
+        elements.raffleButton.disabled = false;
+      },
+      CONFIG.scrollSpeed * 1000 + 100,
+    );
+  } catch (error) {
+    console.error("Raffle error:", error);
+    elements.raffleButton.disabled = false;
+    isRaffleRunning = false;
+    elements.centerLine.style.visibility = "hidden";
+    elements.centerLine.style.opacity = "0";
+  }
 }
+
+elements.modal.addEventListener("click", closeModal);
+elements.raffleButton.addEventListener("click", startRaffle);
