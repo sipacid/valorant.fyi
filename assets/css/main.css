@@ -6,7 +6,7 @@
 :root {
   --transform-length: translateX(calc(-122px * 1000));
   --primary-color: #ff4757;
-  --primary-hover: #e84118;
+  --primary-hover: #e32b39;
   --background-start: #0f0f12;
   --background-end: #1a1a1f;
   --valorant-red: #ff4757;
@@ -31,7 +31,6 @@ body {
     ui-sans-serif,
     system-ui,
     -apple-system,
-    system-ui,
     "Segoe UI",
     Roboto,
     "Helvetica Neue",
@@ -72,24 +71,12 @@ body {
   animation-timing-function: linear;
 }
 
-.intersect_object.active {
-  transform: scale(1.3);
-  z-index: 5;
-  filter: drop-shadow(0 0 10px var(--primary-color));
-}
-
 header {
   position: fixed;
   top: 0;
   width: 100%;
   padding: 0.75rem;
-  background: linear-gradient(
-    to bottom,
-    rgba(15, 15, 18, 0.95),
-    rgba(15, 15, 18, 0.85)
-  );
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(15, 15, 18, 0.85);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   z-index: 100;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -99,7 +86,6 @@ header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -107,8 +93,6 @@ header {
 .logo img {
   width: 36px;
   height: 36px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  transition: transform 0.2s ease;
 }
 
 .logo img:hover {
@@ -168,91 +152,38 @@ header {
   position: fixed;
   user-select: none;
   top: 10%;
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 200px,
-    black calc(100% - 200px),
-    transparent
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 200px,
-    black calc(100% - 200px),
-    transparent
-  );
-}
 
-#agents::before,
-#agents::after {
-  content: "";
-  position: fixed;
-  top: 0;
-  width: 200px;
-  height: 100%;
-  z-index: 5;
-  pointer-events: none;
-}
-
-#agents::before {
-  left: 0;
-  background: linear-gradient(to right, var(--overlay-dark), transparent);
-}
-
-#agents::after {
-  right: 0;
-  background: linear-gradient(to left, var(--overlay-dark), transparent);
 }
 
 #agents > div > img {
   height: 100px;
   width: 100px;
   border-radius: 15%;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, .8);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   filter: brightness(0.8);
-  transform: perspective(800px) rotateY(15deg);
   backface-visibility: hidden;
 }
 
-#agents > div:nth-child(even) > img {
-  transform: perspective(800px) rotateY(-15deg);
-}
-
-#agents > div > img:hover {
-  transform: scale(1.1);
-  border-color: var(--primary-color);
-  box-shadow: 0 8px 12px rgba(255, 71, 87, 0.2);
-}
-
-.intersect_object.active > img {
-  border-color: var(--primary-color) !important;
-  filter: brightness(1.2) !important;
-  box-shadow: 0 0 20px rgba(255, 71, 87, 0.5) !important;
-  transform: perspective(800px) rotateY(0deg) scale(1.3) !important;
-}
 
 #btn {
   position: fixed;
   background: var(--primary-color);
   color: white;
   padding: 1rem 2rem;
-  font-size: 1.2rem;
+  font-size: larger;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
   top: 40%;
-  transform-origin: center;
-  font-family: VALORANT, sans-serif;
 }
 
 #btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+  box-shadow: 0 4px 15px rgba(204, 204, 204, 0.3);
 }
 
 #btn:hover:enabled {
@@ -286,6 +217,7 @@ header {
   animation: fadeIn 0.5s ease;
 }
 
+
 #agent-name {
   color: white;
   font-size: 2.5rem;
@@ -300,9 +232,7 @@ header {
   margin: 0 auto;
   max-width: 90%;
   max-height: 90%;
-  border-radius: 20px;
   user-select: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   transition: transform 0.3s ease;
 }
 
@@ -313,35 +243,24 @@ header {
 footer {
   position: fixed;
   bottom: 0;
-  left: 0;
   width: 100%;
-  background: linear-gradient(
-    to top,
-    rgba(15, 15, 18, 0.95),
-    rgba(15, 15, 18, 0.85)
-  );
+  background: rgba(15, 15, 18, 0.85);
   color: rgb(229 231 235);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
 }
 
 footer div {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: auto;
   text-wrap: pretty;
-  padding: 1.25rem 2rem;
-  font-weight: 400;
-  line-height: 1.6;
-  font-size: 0.95rem;
-  letter-spacing: 0.01em;
+  padding: 1.25rem;
 }
 
 footer a {
   color: var(--primary-color);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: bold;
   transition: all 0.2s ease;
   padding: 0.2em 0.4em;
   margin: 0 -0.4em;
@@ -349,9 +268,8 @@ footer a {
 }
 
 footer a:hover {
-  text-decoration: none;
-  background-color: rgba(255, 71, 87, 0.1);
   color: var(--primary-color);
+  text-decoration: underline;
 }
 
 .hidden {
@@ -377,11 +295,3 @@ footer a:hover {
   animation: modalShow 0.3s ease-out;
 }
 
-#agents .intersect_object.intersecting > img {
-  border: 2px solid var(--primary-color);
-  filter: brightness(1.2);
-  box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);
-  transition: none;
-  will-change: border, filter, box-shadow;
-  z-index: 2;
-}
