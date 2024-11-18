@@ -1,9 +1,9 @@
 const CONFIG = {
   checkInterval: 8,
-  agentsPerRound: 1000,
+  agentsPerRound: 310,
   modalFadeTime: 500,
-  scrollSpeed: 6,
-  easeEffect: "ease-in-out",
+  scrollSpeed: 3,
+  easeEffect: "cubic-bezier(0.4, 0, 0.2, 1)",
   intersectionDistance: 100,
 };
 

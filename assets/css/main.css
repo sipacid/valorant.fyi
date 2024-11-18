@@ -4,7 +4,7 @@
 }
 
 :root {
-  --transform-length: translateX(calc(-122px * 1000));
+  --transform-length: translateX(calc(-122px * 300));
   --primary-color: #ff4757;
   --primary-hover: #e32b39;
   --background-start: #0f0f12;
