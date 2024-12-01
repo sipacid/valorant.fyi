@@ -8,29 +8,16 @@
 }
 
 body {
-  background: #09090b;
+  background: #0a0a0a;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
   margin: 0;
-  font-family:
-    "Inter var",
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    system-ui,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    "Noto Sans",
-    sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    "Noto Color Emoji";
+  font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 @keyframes scroll {
@@ -59,6 +46,45 @@ body {
   animation: scroll 3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 15, 15, 0.98),
+    rgba(15, 15, 15, 0.95)
+  );
+  backdrop-filter: blur(8px);
+  padding: 0.8rem 40px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+header h1 {
+  font-family: VALORANT, sans-serif;
+  color: #ff4655;
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 3px;
+  transition: color 0.2s ease;
+}
+
+header p {
+  color: #999;
+  margin: 2px 0 0 1px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+header:hover h1 {
+  color: #ff5765;
+}
+
 #agents {
   display: flex;
   flex-wrap: nowrap;
@@ -68,14 +94,24 @@ body {
   overflow-x: clip;
   position: fixed;
   user-select: none;
-  top: 10%;
+  top: 120px;
 }
 
 #agents > div > img {
   height: 100px;
   width: 100px;
-  border-radius: 10%;
-  border: 2px solid #fff;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  filter: brightness(0.9);
+}
+
+#agents > div > img:hover {
+  border-color: #ff4655;
+  filter: brightness(1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 70, 85, 0.2);
 }
 
 #red-line {
@@ -89,25 +125,31 @@ body {
 
 #btn {
   position: fixed;
-  background-color: #ff4757;
+  background: #ff4655;
   color: white;
-  padding: 15px 30px;
-  font-size: 20px;
+  padding: 16px 32px;
+  font-size: 18px;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.2s ease;
+  font-family: VALORANT, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 20px rgba(255, 70, 85, 0.3);
   top: 40%;
 }
 
 #btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+  background: #333;
+  box-shadow: none;
+  color: #666;
 }
 
 #btn:hover:enabled {
-  background-color: #e84118;
-  transform: scale(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 0 30px rgba(255, 70, 85, 0.5);
+  background: #ff5765;
 }
 
 #btn-container {
@@ -130,17 +172,18 @@ body {
   top: 0;
   width: 100%;
   overflow: auto;
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(6px);
   animation: fadeIn 0.5s ease;
 }
 
 #agent-name {
   color: white;
-  font-size: 30px;
+  font-size: 32px;
   text-align: center;
   font-family: VALORANT, sans-serif;
+  letter-spacing: 1px;
+  margin-top: 20px;
+  text-shadow: none;
 }
 
 #agent-image {
@@ -148,8 +191,14 @@ body {
   margin: 0 auto;
   max-width: 90%;
   max-height: 90%;
-  border-radius: 10%;
+  border-radius: 4px;
   user-select: none;
+  border: none;
+  transition: transform 0.3s ease;
+}
+
+#agent-image:hover {
+  transform: scale(1.02);
 }
 
 footer {
@@ -157,33 +206,46 @@ footer {
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: #201c1c;
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.98),
+    rgba(15, 15, 15, 0.95)
+  );
+  backdrop-filter: blur(10px);
   text-align: start;
   color: rgb(229 231 235);
-  border-top: 1px solid rgb(229 231 235);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
 }
 
 footer div {
   text-wrap: pretty;
-  padding: 20px;
+  padding: 16px 40px;
   font-weight: 300;
+  max-width: 800px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #999;
 }
 
 footer a {
-  color: rgb(129 140 248);
+  color: #ff4655;
   text-decoration: none;
   font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 2px 4px;
+  margin: 0 -4px;
+  border-radius: 3px;
 }
 
 footer a:hover {
-  text-decoration: underline;
-  color: rgb(165 180 252);
+  text-decoration: none;
+  background: rgba(255, 70, 85, 0.1);
+  color: #ff5765;
 }
 
 .hidden {
   visibility: hidden;
   opacity: 0;
-  transition:
-    visibility 0s 0.1s,
-    opacity 0.1s linear;
+  transition: visibility 0s 0.1s, opacity 0.1s linear;
 }
