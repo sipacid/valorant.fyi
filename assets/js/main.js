@@ -112,7 +112,7 @@ function resetRaffle() {
 
 async function startRaffle() {
   raffleButton.disabled = true;
-  await resetRaffle();
+  resetRaffle();
   populateAgents();
   intervalId = setInterval(checkIntersectionWithLine, checkInterval);
   setTimeout(() => {

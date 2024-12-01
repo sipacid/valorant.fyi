@@ -15,9 +15,22 @@ body {
   align-items: center;
   height: 100vh;
   margin: 0;
-  font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family:
+    "Inter var",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    system-ui,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
 }
 
 @keyframes scroll {
@@ -170,5 +183,7 @@ footer a:hover {
 .hidden {
   visibility: hidden;
   opacity: 0;
-  transition: visibility 0s 0.1s, opacity 0.1s linear;
+  transition:
+    visibility 0s 0.1s,
+    opacity 0.1s linear;
 }
