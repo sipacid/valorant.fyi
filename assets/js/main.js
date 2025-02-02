@@ -22,6 +22,7 @@ const imgDict = {
   Sage: "assets/img/icons/sage-icon.webp",
   Skye: "assets/img/icons/skye-icon.webp",
   Sova: "assets/img/icons/sova-icon.webp",
+  Tejo: "assets/img/icons/tejo-icon.webp",
   Viper: "assets/img/icons/viper-icon.webp",
   Vyse: "assets/img/icons/vyse-icon.webp",
   Yoru: "assets/img/icons/yoru-icon.webp",
