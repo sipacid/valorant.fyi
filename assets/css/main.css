@@ -54,6 +54,61 @@ footer a:hover {
     font-weight: 600;
 }
 
+#header {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    padding-left: 2.5rem;
+    padding-top: .5rem;
+    background: var(--background-end);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    height: 4rem;
+}
+
+#header h1 {
+    font-family: VALORANT, sans-serif;
+    font-size: 2rem;
+    margin: 0;
+    padding: 0;
+    color: var(--primary-color);
+}
+
+/* ------ Slider ------ */
+
+.slider {
+    position: absolute;
+    width: 80vw;
+    height: 10vw;
+    transform-style: preserve-3d;
+    animation: rotate 3s cubic-bezier(0, 0, 0, 1);
+    /*animation: rotate 500s infinite linear;*/
+}
+
+.slider .card-wrap {
+    position: absolute;
+    inset: 0;
+    transform:
+            /* 72 deg is 5 card to the right*/
+            rotateY(calc( (var(--position) - 1) * (360 / var(--quantity)) * 1deg))
+            translateZ(1920px);
+
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotateY(0deg);
+    }
+    100% {
+        /* 72 deg is 5 card to the right*/
+        transform: rotateY(calc(-2160deg));
+    }
+}
+
+/* ------ Card ------ */
+
 .card-wrap {
     display: grid;
     place-content: center;
@@ -61,12 +116,13 @@ footer a:hover {
     transform-style: preserve-3d;
     perspective: 800px;
 }
+
 .card {
     border-radius: 1.5rem;
     backface-visibility: hidden;
     border: var(--primary-color) 2px solid;
-    height: 50vh;
     aspect-ratio: 9 / 16;
+    height: 600px;
     background: url(../img/card-backgrounds/card-background-1.svg);
     background-size: cover;
     box-shadow: 50px 50px 30px rgba(0, 0, 0, 0.3);
@@ -101,24 +157,6 @@ footer a:hover {
     bottom: 0;
 }
 
-.slider {
-    position: absolute;
-    width: 80vw;
-    height: 10vw;
-    transform-style: preserve-3d;
-    transform: perspective(3000px) rotateY(0deg);
-    animation: rotate 100s linear infinite;
-}
-
-.slider .card-wrap {
-    position: absolute;
-    inset: 0;
-    transform:
-            rotateY(calc( (var(--position) - 1) * (360 / var(--quantity)) * 1deg))
-            translateZ(1920px);
-
-}
-
 .card-back {
     display: flex;
     justify-content: center;
@@ -141,12 +179,22 @@ footer a:hover {
     box-shadow: 50px 50px 30px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes rotate {
-    0% {
-        transform: rotateY(0deg);
+@media (max-height: 800px) {
+    .card {
+        height: 400px;
     }
-    100% {
-        transform: rotateY(360deg);
+}
+
+@media (max-height: 1200px) and (min-height: 801px) {
+    .card {
+        height: 500px;
+    }
+}
+
+
+@media (max-height: 1600px) and (min-height: 1201px) {
+    .card {
+        height: 600px;
     }
 }
 
