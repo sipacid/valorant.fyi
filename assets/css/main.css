@@ -138,6 +138,7 @@ footer a:hover {
 }
 
 .card-content {
+  border-radius: 1.5rem;
   display: flex;
   flex-direction: column;
   width: 100%;
