@@ -1,233 +1,234 @@
 @font-face {
-    font-family: VALORANT;
-    src: url(../fonts/VALORANT-Regular.ttf);
+  font-family: VALORANT;
+  src: url(../fonts/VALORANT-Regular.ttf);
 }
 
 :root {
-    --transform-length: translateX(calc(-122px * 300));
-    --primary-color: #ff4757;
-    --primary-hover: #e32b39;
-    --background-start: #0f0f12;
-    --background-end: #1a1a1f;
-    --glow-color: rgba(255, 71, 87, 0.5);
-    --overlay-dark: rgba(15, 15, 18, 0.95);
+  --transform-length: translateX(calc(-122px * 300));
+  --primary-color: #ff4757;
+  --primary-hover: #e32b39;
+  --background-start: #0f0f12;
+  --background-end: #1a1a1f;
+  --glow-color: rgba(255, 71, 87, 0.5);
+  --overlay-dark: rgba(15, 15, 18, 0.95);
 }
 
 body {
-    font-family: Roboto, sans-serif;
-    background: var(--background-start);
-    color: #fff;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    overflow-x: hidden;
+  font-family: Roboto, sans-serif;
+  background: var(--background-start);
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 main {
-    display: flex;
-    height: 100vh;
-    overflow: clip;
-    justify-content: center;
-    align-items: center;
-    gap: 10rem;
+  display: flex;
+  height: 100vh;
+  overflow: clip;
+  justify-content: center;
+  align-items: center;
+  gap: 10rem;
 }
 
 footer {
-    background: var(--background-end);
-    color: #fff;
-    padding-left: 2.5rem;
-    display: flex;
-    justify-content: left;
-    align-items: center;
-    height: 4rem;
+  background: var(--background-end);
+  color: #fff;
+  padding-left: 2.5rem;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  height: 4rem;
 }
 
 footer a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 600;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
 }
 
 footer a:hover {
-    color: var(--primary-hover);
-    text-decoration: var(--primary-hover) underline;
-    font-weight: 600;
+  color: var(--primary-hover);
+  text-decoration: var(--primary-hover) underline;
+  font-weight: 600;
 }
 
 #header {
-    display: flex;
-    justify-content: left;
-    align-items: center;
-    padding-left: 2.5rem;
-    padding-top: .5rem;
-    background: var(--background-end);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
-    height: 4rem;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  padding-left: 2.5rem;
+  padding-top: 0.5rem;
+  background: var(--background-end);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+  height: 4rem;
 }
 
 #header h1 {
-    font-family: VALORANT, sans-serif;
-    font-size: 2rem;
-    margin: 0;
-    padding: 0;
-    color: var(--primary-color);
+  font-family: VALORANT, sans-serif;
+  font-size: 2rem;
+  margin: 0;
+  padding: 0;
+  color: var(--primary-color);
 }
 
 /* ------ Slider ------ */
 
 .slider {
-    position: absolute;
-    width: 80vw;
-    height: 10vw;
-    transform-style: preserve-3d;
-    animation: rotate 3s cubic-bezier(0, 0, 0, 1);
-    /*animation: rotate 500s infinite linear;*/
+  position: absolute;
+  width: 80vw;
+  height: 10vw;
+  transform-style: preserve-3d;
+  animation: rotate 3s cubic-bezier(0, 0, 0, 1);
+  /*animation: rotate 500s infinite linear;*/
 }
 
 .slider .card-wrap {
-    position: absolute;
-    inset: 0;
-    transform: /* 72 deg is 5 card to the right*/ rotateY(calc((var(--position) - 1) * (360 / var(--quantity)) * 1deg)) translateZ(1920px);
-
+  position: absolute;
+  inset: 0;
+  transform: /* 72 deg is 5 card to the right*/ rotateY(
+      calc((var(--position) - 1) * (360 / var(--quantity)) * 1deg)
+    )
+    translateZ(1920px);
 }
 
 @keyframes rotate {
-    0% {
-        transform: rotateY(0deg);
-    }
-    100% {
-        /* 72 deg is 5 card to the right*/
-        transform: rotateY(calc(-2160deg));
-    }
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    /* 72 deg is 5 card to the right*/
+    transform: rotateY(calc(-2160deg));
+  }
 }
 
 /* ------ Card ------ */
 
 .card-wrap {
-    display: grid;
-    place-content: center;
-    inset: 0;
-    transform-style: preserve-3d;
-    perspective: 800px;
+  display: grid;
+  place-content: center;
+  inset: 0;
+  transform-style: preserve-3d;
+  perspective: 800px;
 }
 
 .card {
-    border-radius: 1.5rem;
-    backface-visibility: hidden;
-    border: var(--primary-color) 2px solid;
-    aspect-ratio: 9 / 16;
-    height: 600px;
-    background: url(../img/card-backgrounds/card-background-1.svg);
-    background-size: cover;
-    box-shadow: 50px 50px 30px rgba(0, 0, 0, 0.3);
-    transform: rotateX(calc(10deg - (20deg * var(--random-rotation-x)))) rotateY(calc(10deg - (20deg * var(--random-rotation-y))));
+  border-radius: 1.5rem;
+  backface-visibility: hidden;
+  border: var(--primary-color) 2px solid;
+  aspect-ratio: 9 / 16;
+  height: 600px;
+  background: url(../img/card-backgrounds/card-background-1.svg);
+  background-size: cover;
+  box-shadow: 50px 50px 30px rgba(0, 0, 0, 0.3);
+  transform: rotateX(calc(10deg - (20deg * var(--random-rotation-x))))
+    rotateY(calc(10deg - (20deg * var(--random-rotation-y))));
 }
 
 .card img {
-    width: 150%;
-    justify-self: center;
-    align-self: center;
-    height: 90%;
-    object-fit: cover;
+  width: 150%;
+  justify-self: center;
+  align-self: center;
+  height: 90%;
+  object-fit: cover;
 }
 
 .card-content {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    backdrop-filter: blur(1px);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  backdrop-filter: blur(1px);
 }
 
-
 .card h1 {
-    font-family: VALORANT, sans-serif;
-    padding: 1rem;
-    font-size: 2rem;
-    margin: 0;
-    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
-    position: absolute;
-    bottom: 0;
+  font-family: VALORANT, sans-serif;
+  padding: 1rem;
+  font-size: 2rem;
+  margin: 0;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+  position: absolute;
+  bottom: 0;
 }
 
 .card-back {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transform: rotateY(180deg);
-    backface-visibility: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
 }
 
-.card-front, .card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: 1.5rem;
-    border: var(--primary-color) 2px solid;
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 1.5rem;
+  border: var(--primary-color) 2px solid;
 }
 
 .card-front {
-    background-size: cover;
-    box-shadow: 50px 50px 30px rgba(0, 0, 0, 0.3);
+  background-size: cover;
+  box-shadow: 50px 50px 30px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-height: 800px) {
-    .card {
-        height: 400px;
-    }
+  .card {
+    height: 400px;
+  }
 }
 
 @media (max-height: 1200px) and (min-height: 801px) {
-    .card {
-        height: 500px;
-    }
+  .card {
+    height: 500px;
+  }
 }
 
-
 @media (max-height: 1600px) and (min-height: 1201px) {
-    .card {
-        height: 600px;
-    }
+  .card {
+    height: 600px;
+  }
 }
 
 .chosen-card {
-    transform: rotateY(0deg) translateZ(200px);
-    transition: transform 1s;
-    -webkit-box-shadow: 0 0 69px 20px var(--glow-color);
-    -moz-box-shadow: 0 0 69px 20px var(--glow-color);
-    box-shadow: 0 0 69px 20px var(--glow-color);
+  transform: rotateY(0deg) translateZ(200px);
+  transition: transform 1s;
+  -webkit-box-shadow: 0 0 69px 20px var(--glow-color);
+  -moz-box-shadow: 0 0 69px 20px var(--glow-color);
+  box-shadow: 0 0 69px 20px var(--glow-color);
 }
 
-/* *//* ------ Buttons ------ */
+/* */ /* ------ Buttons ------ */
 
 button {
-    margin: 1rem;
-    padding: 1rem;
-    border: none;
-    background: var(--primary-color);
-    color: #fff;
-    font-weight: 600;
-    border-radius: 1rem;
-    cursor: pointer;
-    transition: background 0.3s;
-    width: 10rem;
-    height: 3rem;
-    z-index: 100;
+  margin: 1rem;
+  padding: 1rem;
+  border: none;
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  width: 10rem;
+  height: 3rem;
+  z-index: 100;
 }
 
 button:hover {
-    background: var(--primary-hover);
-
+  background: var(--primary-hover);
 }
 
 #restart {
-    margin-top: 35vw;
-    display: none;
+  margin-top: 35vw;
+  display: none;
 }
 
 /*
