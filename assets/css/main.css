@@ -90,10 +90,7 @@ footer a:hover {
 .slider .card-wrap {
     position: absolute;
     inset: 0;
-    transform:
-            /* 72 deg is 5 card to the right*/
-            rotateY(calc( (var(--position) - 1) * (360 / var(--quantity)) * 1deg))
-            translateZ(1920px);
+    transform: /* 72 deg is 5 card to the right*/ rotateY(calc((var(--position) - 1) * (360 / var(--quantity)) * 1deg)) translateZ(1920px);
 
 }
 
@@ -196,6 +193,41 @@ footer a:hover {
     .card {
         height: 600px;
     }
+}
+
+.chosen-card {
+    transform: rotateY(0deg) translateZ(200px);
+    transition: transform 1s;
+    -webkit-box-shadow: 0 0 69px 20px var(--glow-color);
+    -moz-box-shadow: 0 0 69px 20px var(--glow-color);
+    box-shadow: 0 0 69px 20px var(--glow-color);
+}
+
+/* *//* ------ Buttons ------ */
+
+button {
+    margin: 1rem;
+    padding: 1rem;
+    border: none;
+    background: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    width: 10rem;
+    height: 3rem;
+    z-index: 100;
+}
+
+button:hover {
+    background: var(--primary-hover);
+
+}
+
+#restart {
+    margin-top: 35vw;
+    display: none;
 }
 
 /*

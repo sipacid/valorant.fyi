@@ -82,8 +82,12 @@ const cardsData = [
     { title: 'Yoru', imgSrc: './assets/img/agents-full/yoru.webp', imgAlt: 'Yoru' },
 ];
 const sliderElement = document.querySelector('.slider');
+const restartButton = document.querySelector('#restart');
+const startButton = document.querySelector('#start');
 
 function start() {
+    startButton.style.display = 'none';
+    resetSliderAnimation()
     let cardPosition = 0;
 
     cardsData.sort(() => Math.random() - 0.5);
@@ -99,8 +103,31 @@ function start() {
         const card = new Card(data.title, data.imgSrc, data.imgAlt, cardPosition++);
         sliderElement.appendChild(card.createCard());
     });
-    console.log(cardsData[1].title);
+
     sliderElement.style.setProperty('--quantity', cardsData.length);
+
+    setTimeout(() => {
+        // restartButton.style.display = 'block';
+
+        const cards = document.querySelectorAll('.card');
+        cards[1].classList.add('chosen-card');
+        cards[1].addEventListener('click', () => {
+            reset();
+        });
+
+    }, 3000);
 }
 
-start();
+function resetSliderAnimation() {
+    sliderElement.innerHTML = '';
+    const parent = sliderElement.parentNode;
+    parent.removeChild(sliderElement);
+    parent.appendChild(sliderElement);
+}
+
+function reset() {
+    restartButton.style.display = 'none';
+    resetSliderAnimation()
+    start();
+}
+
