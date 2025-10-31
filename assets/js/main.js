@@ -51,7 +51,9 @@ class Card {
 }
 
 const getRandomBackground = () =>
-  `./assets/img/card-backgrounds/card-background-${Math.floor(Math.random() * 5) + 1}.svg`;
+  `./assets/img/card-backgrounds/card-background-${
+    Math.floor(Math.random() * 5) + 1
+  }.svg`;
 
 const cardsData = [
   {
@@ -166,6 +168,11 @@ const cardsData = [
     imgAlt: "Tejo",
   },
   {
+    title: "Veto",
+    imgSrc: "./assets/img/agents-full/veto.webp",
+    imgAlt: "Veto",
+  },
+  {
     title: "Viper",
     imgSrc: "./assets/img/agents-full/viper.webp",
     imgAlt: "Viper",
@@ -186,46 +193,63 @@ const cardsData = [
     imgAlt: "Yoru",
   },
 ];
+
+const TOTAL_CARDS = 25;
+const CHOSEN_CARD_INDEX = 1; // The card that will be chosen (0-indexed)
+const ANIMATION_DELAY = 3000; // milliseconds
+
 const sliderElement = document.querySelector(".slider");
 const restartButton = document.querySelector("#restart");
 const startButton = document.querySelector("#start");
 
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 function start() {
+  if (!sliderElement || !startButton) {
+    console.error("Required elements not found");
+    return;
+  }
+
   startButton.style.display = "none";
   resetSliderAnimation();
-  let cardPosition = 0;
 
-  cardsData.sort(() => Math.random() - 0.5);
-  // make sure cards data has exactly 25 cards
-  while (cardsData.length < 25) {
-    cardsData.push(cardsData[Math.floor(Math.random() * cardsData.length)]);
-  }
-  while (cardsData.length > 25) {
-    cardsData.pop();
+  let gameCards = shuffleArray(cardsData);
+
+  while (gameCards.length < TOTAL_CARDS) {
+    const randomCard = cardsData[Math.floor(Math.random() * cardsData.length)];
+    gameCards.push(randomCard);
   }
 
-  cardsData.forEach((data) => {
-    const card = new Card(data.title, data.imgSrc, data.imgAlt, cardPosition++);
+  gameCards = gameCards.slice(0, TOTAL_CARDS);
+
+  let index = 0;
+  for (const data of gameCards) {
+    const card = new Card(data.title, data.imgSrc, data.imgAlt, index++);
     sliderElement.appendChild(card.createCard());
-  });
+  }
 
-  sliderElement.style.setProperty("--quantity", cardsData.length);
+  sliderElement.style.setProperty("--quantity", gameCards.length);
 
   setTimeout(() => {
-    // restartButton.style.display = 'block';
-
     const cards = document.querySelectorAll(".card");
-    cards[1].classList.add("chosen-card");
-    cards[1].addEventListener("click", () => {
-      reset();
-    });
-  }, 3000);
+    if (cards[CHOSEN_CARD_INDEX]) {
+      cards[CHOSEN_CARD_INDEX].classList.add("chosen-card");
+      cards[CHOSEN_CARD_INDEX].addEventListener("click", reset);
+    }
+  }, ANIMATION_DELAY);
 }
 
 function resetSliderAnimation() {
   sliderElement.innerHTML = "";
   const parent = sliderElement.parentNode;
-  parent.removeChild(sliderElement);
+  sliderElement.remove();
   parent.appendChild(sliderElement);
 }
 
