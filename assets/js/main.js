@@ -199,7 +199,6 @@ const CHOSEN_CARD_INDEX = 1; // The card that will be chosen (0-indexed)
 const ANIMATION_DELAY = 3000; // milliseconds
 
 const sliderElement = document.querySelector(".slider");
-const restartButton = document.querySelector("#restart");
 const startButton = document.querySelector("#start");
 
 function shuffleArray(array) {
@@ -240,8 +239,20 @@ function start() {
   setTimeout(() => {
     const cards = document.querySelectorAll(".card");
     if (cards[CHOSEN_CARD_INDEX]) {
-      cards[CHOSEN_CARD_INDEX].classList.add("chosen-card");
-      cards[CHOSEN_CARD_INDEX].addEventListener("click", reset);
+      const chosenCard = cards[CHOSEN_CARD_INDEX];
+      chosenCard.classList.add("chosen-card");
+      chosenCard.addEventListener("click", reset);
+
+      requestAnimationFrame(() => {
+        chosenCard.classList.add("card-reveal");
+      });
+
+      // Create "Spin Again" button
+      const spinAgain = document.createElement("button");
+      spinAgain.id = "spin-again";
+      spinAgain.textContent = "Spin Again";
+      spinAgain.addEventListener("click", reset);
+      sliderElement.parentNode.appendChild(spinAgain);
     }
   }, ANIMATION_DELAY);
 }
@@ -254,7 +265,25 @@ function resetSliderAnimation() {
 }
 
 function reset() {
-  restartButton.style.display = "none";
+  const spinAgain = document.querySelector("#spin-again");
+  if (spinAgain) spinAgain.remove();
   resetSliderAnimation();
   start();
 }
+
+// Ambient floating particles
+function createParticles() {
+  const count = 18;
+  for (let i = 0; i < count; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
+    particle.style.left = Math.random() * 100 + "vw";
+    particle.style.animationDuration = (15 + Math.random() * 15) + "s";
+    particle.style.animationDelay = (Math.random() * 10) + "s";
+    particle.style.width = (1 + Math.random() * 2) + "px";
+    particle.style.height = particle.style.width;
+    document.body.appendChild(particle);
+  }
+}
+
+createParticles();

@@ -17,7 +17,22 @@
     <meta name="author" content="girl.lgbt" />
     <meta name="theme-color" content="#ff4757" />
 
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="valorant.fyi — Agent Roulette" />
+    <meta property="og:description" content="Spin the wheel and let fate pick your next Valorant agent." />
+    <meta property="og:url" content="https://valorant.fyi" />
+    <meta property="og:site_name" content="valorant.fyi" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="valorant.fyi — Agent Roulette" />
+    <meta name="twitter:description" content="Spin the wheel and let fate pick your next Valorant agent." />
+
     <link rel="icon" type="image/png" href="./assets/img/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link
       href="./assets/css/main.css"
       media="screen"
@@ -28,19 +43,17 @@
   </head>
   <body>
     <header id="header">
-      <h1>Valorant.fyi</h1>
+      <div class="header-content">
+        <span class="header-accent">//</span>
+        <h1>Valorant<span class="header-dot">.</span>fyi</h1>
+        <span class="header-tagline">AGENT SELECTION PROTOCOL</span>
+      </div>
     </header>
     <main>
+      <span class="hud-text hud-top-left">SYS::READY</span>
+      <span class="hud-text hud-bottom-right">PROTOCOL v2.1 — Fan-made, not associated with Riot Games — Made with love by <a href="https://girl.lgbt/">girl.lgbt</a></span>
       <div class="slider"></div>
       <button id="start" onclick="start()">Start</button>
-      <button id="restart" onclick="reset()">Again</button>
     </main>
-    <footer>
-      <div>
-        This is a fan-made site for Valorant and it is not in any way associated
-        with Riot Games - Made with love by the people at
-        <a href="https://girl.lgbt/">girl.lgbt</a>
-      </div>
-    </footer>
   </body>
 </html>
