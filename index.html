@@ -48,12 +48,28 @@
         <h1>Valorant<span class="header-dot">.</span>fyi</h1>
         <span class="header-tagline">AGENT SELECTION PROTOCOL</span>
       </div>
+      <button id="mute-button" type="button">SFX ON</button>
     </header>
     <main>
       <span class="hud-text hud-top-left">SYS::READY</span>
       <span class="hud-text hud-bottom-right">PROTOCOL v2.1 — Fan-made, not associated with Riot Games — Made with love by <a href="https://girl.lgbt/">girl.lgbt</a></span>
       <div class="slider"></div>
-      <button id="start" onclick="start()">Start</button>
+      <div class="landing-buttons">
+        <button id="start" onclick="start()">Start</button>
+        <button id="agents-button" type="button">Agents</button>
+      </div>
     </main>
+    <div id="selection-overlay" hidden aria-hidden="true">
+      <header class="selection-header">
+        <h2>Agent Pool</h2>
+        <p class="selection-subtitle">Click a card to flip it out of the spin pool. Selection persists.</p>
+      </header>
+      <div class="selection-grid" id="selection-grid"></div>
+      <footer class="selection-footer">
+        <button id="selection-all" type="button">All</button>
+        <button id="selection-none" type="button">None</button>
+        <button id="selection-done" type="button">Done</button>
+      </footer>
+    </div>
   </body>
 </html>
