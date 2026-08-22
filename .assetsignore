@@ -1,0 +1,10 @@
+# Files in the repo root that should not be uploaded as public assets.
+# wrangler.jsonc serves the whole directory ("assets": { "directory": "." }),
+# so anything not listed here ends up fetchable on the live site.
+tools
+.github
+.idea
+.gitignore
+.assetsignore
+wrangler.jsonc
+LICENSE

@@ -3,31 +3,31 @@
   <head>
     <meta charset="utf-8" />
     <meta content="IE=edge" http-equiv="X-UA-Compatible" />
-    <title>valorant.fyi - Agent roulette</title>
+    <title>valorant.fyi - Agent roulette &amp; challenges</title>
 
     <meta content="width=device-width, initial-scale=1" name="viewport" />
     <meta
       name="description"
-      content="Pick a random Valorant agent to play in-game. This fan-site is not associated with Riot Games."
+      content="Spin for a random Valorant agent, then draw challenges — bingo cards, gauntlet runs and match-long rules. Share a link and everyone gets the same card. This fan-site is not associated with Riot Games."
     />
     <meta
       name="keywords"
-      content="Valorant, random agent, Valorant agents, Riot Games, Agent picker, Agent, Random"
+      content="Valorant, random agent, Valorant agents, Riot Games, Agent picker, Agent, Random, Valorant challenges, Valorant bingo"
     />
     <meta name="author" content="girl.lgbt" />
     <meta name="theme-color" content="#ff4757" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="valorant.fyi — Agent Roulette" />
-    <meta property="og:description" content="Spin the wheel and let fate pick your next Valorant agent." />
+    <meta property="og:title" content="valorant.fyi — Agent Roulette &amp; Challenges" />
+    <meta property="og:description" content="Let fate pick your agent, then draw a challenge card. Bingo, gauntlet or a contract of rules — share the link and race your friends." />
     <meta property="og:url" content="https://valorant.fyi" />
     <meta property="og:site_name" content="valorant.fyi" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="valorant.fyi — Agent Roulette" />
-    <meta name="twitter:description" content="Spin the wheel and let fate pick your next Valorant agent." />
+    <meta name="twitter:title" content="valorant.fyi — Agent Roulette &amp; Challenges" />
+    <meta name="twitter:description" content="Let fate pick your agent, then draw a challenge card. Bingo, gauntlet or a contract of rules — share the link and race your friends." />
 
     <link rel="icon" type="image/png" href="./assets/img/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -39,9 +39,48 @@
       rel="stylesheet"
       type="text/css"
     />
+    <link
+      href="./assets/css/challenges.css"
+      media="screen"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <!--
+      Plain <script> tags rather than ES modules, on purpose: modules are fetched
+      with CORS and break on file:// and on some plain static hosts, and this site
+      has no build step or dev server. The trade-off is that LOAD ORDER MATTERS —
+      each file assigns onto window.VF and may read what came before it. `defer`
+      guarantees in-order execution after parsing.
+
+      vf.js first (creates the namespace), main.js last (wires everything up).
+    -->
+    <script defer src="./assets/js/vf.js"></script>
+    <script defer src="./assets/js/data/agents.js"></script>
+    <script defer src="./assets/js/data/weapons.js"></script>
+    <script defer src="./assets/js/lib/rng.js"></script>
+    <script defer src="./assets/js/lib/store.js"></script>
+    <script defer src="./assets/js/lib/seed.js"></script>
+    <script defer src="./assets/js/data/catalog.js"></script>
+    <script defer src="./assets/js/lib/pool.js"></script>
+    <script defer src="./assets/js/lib/router.js"></script>
+    <script defer src="./assets/js/ui/icons.js"></script>
+    <script defer src="./assets/js/ui/audio.js"></script>
+    <script defer src="./assets/js/ui/card.js"></script>
+    <script defer src="./assets/js/ui/spin.js"></script>
+    <script defer src="./assets/js/ui/agentPool.js"></script>
+    <script defer src="./assets/js/ui/atmosphere.js"></script>
+    <script defer src="./assets/js/ui/challenges/state.js"></script>
+    <script defer src="./assets/js/ui/challenges/share.js"></script>
+    <script defer src="./assets/js/ui/challenges/bingo.js"></script>
+    <script defer src="./assets/js/ui/challenges/gauntlet.js"></script>
+    <script defer src="./assets/js/ui/challenges/ruleset.js"></script>
+    <script defer src="./assets/js/ui/challenges/draw.js"></script>
+    <script defer src="./assets/js/ui/challenges/manage.js"></script>
+    <script defer src="./assets/js/ui/challenges/index.js"></script>
     <script defer src="./assets/js/main.js"></script>
   </head>
-  <body>
+  <body data-screen="landing">
     <header id="header">
       <div class="header-content">
         <span class="header-accent">//</span>
@@ -52,23 +91,96 @@
     </header>
     <main>
       <span class="hud-text hud-top-left">SYS::READY</span>
-      <span class="hud-text hud-bottom-right">PROTOCOL v2.1 — Fan-made, not associated with Riot Games — Made with love by <a href="https://girl.lgbt/">girl.lgbt</a></span>
+      <span class="hud-text hud-bottom-right">PROTOCOL v3.0 — Fan-made, not associated with Riot Games — Made with love by <a href="https://girl.lgbt/">girl.lgbt</a></span>
       <div class="slider"></div>
       <div class="landing-buttons">
-        <button id="start" onclick="start()">Start</button>
+        <button id="start" type="button">Start</button>
+        <button id="challenges-button" type="button">Challenges</button>
         <button id="agents-button" type="button">Agents</button>
       </div>
+      <p id="pool-warning" class="pool-warning" hidden role="status">
+        Every agent is switched off — turn at least one back on to spin.
+      </p>
     </main>
-    <div id="selection-overlay" hidden aria-hidden="true">
+
+    <section id="challenge-screen" class="challenge-screen" aria-label="Challenges">
+      <p id="challenge-banner" class="challenge-banner" hidden role="status"></p>
+      <div id="mode-picker" class="mode-picker"></div>
+      <div id="run-root" class="run-root"></div>
+    </section>
+    <div id="challenge-flash" class="challenge-flash" aria-hidden="true"></div>
+
+    <div id="selection-overlay" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Agent pool">
       <header class="selection-header">
         <h2>Agent Pool</h2>
         <p class="selection-subtitle">Click a card to flip it out of the spin pool. Selection persists.</p>
+        <p id="selection-count" class="selection-count"></p>
       </header>
       <div class="selection-grid" id="selection-grid"></div>
       <footer class="selection-footer">
         <button id="selection-all" type="button">All</button>
         <button id="selection-none" type="button">None</button>
         <button id="selection-done" type="button">Done</button>
+      </footer>
+    </div>
+
+    <div id="manage-overlay" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Challenge pool">
+      <header class="selection-header">
+        <h2>Challenge Pool</h2>
+        <p class="selection-subtitle">
+          Switch challenges off, or write your own. These settings apply to your own
+          runs — cards opened from a shared link always use the official list so
+          everyone sees the same card.
+        </p>
+        <p id="manage-count" class="selection-count"></p>
+      </header>
+
+      <div class="manage-toolbar">
+        <input id="manage-search" type="search" placeholder="Search challenges…" aria-label="Search challenges" />
+        <select id="manage-kind" aria-label="Filter by type">
+          <option value="all">All types</option>
+          <option value="objective">Objectives</option>
+          <option value="rule">Rules</option>
+          <option value="custom">My challenges</option>
+        </select>
+      </div>
+
+      <ul class="manage-list" id="manage-list"></ul>
+
+      <form class="manage-add" id="manage-add">
+        <h3>Add your own</h3>
+        <input name="text" type="text" required maxlength="140" placeholder="e.g. Get a kill while typing in all-chat" aria-label="Challenge text" />
+        <div class="manage-add-row">
+          <select name="kind" aria-label="Type">
+            <option value="objective">Objective</option>
+            <option value="rule">Rule</option>
+          </select>
+          <select name="difficulty" aria-label="Difficulty">
+            <option value="1">★</option>
+            <option value="2" selected>★★</option>
+            <option value="3">★★★</option>
+            <option value="4">★★★★</option>
+          </select>
+          <select name="scope" aria-label="Scope">
+            <option value="match">Whole match</option>
+            <option value="round">One round</option>
+          </select>
+          <select name="agent" id="manage-add-agent" aria-label="Agent">
+            <option value="">Any agent</option>
+          </select>
+          <button type="submit">Add</button>
+        </div>
+        <p class="manage-add-hint">
+          Tip: use <code>{C}</code>, <code>{Q}</code>, <code>{E}</code> or <code>{X}</code> and
+          they'll be replaced with the locked agent's ability name.
+        </p>
+        <p id="manage-notice" class="manage-notice" hidden role="status"></p>
+      </form>
+
+      <footer class="selection-footer">
+        <button id="manage-all" type="button">All</button>
+        <button id="manage-none" type="button">None</button>
+        <button id="manage-done" type="button">Done</button>
       </footer>
     </div>
   </body>
