@@ -1,0 +1,1202 @@
+/* challenges.css — everything for the challenge screen, its modes and the
+   challenge-pool overlay. Loaded after main.css and reuses its tokens. */
+
+/* ------ Screens ------
+
+   There is no router, so the hash is reflected onto <body data-screen> and CSS
+   does the showing and hiding — the same idea as the existing body.spin-active
+   class. `carousel-takeover` is the single-draw mode borrowing the agent
+   carousel, which lives inside <main>. */
+
+body[data-screen="landing"] .challenge-screen,
+body.carousel-takeover .challenge-screen {
+    display: none;
+}
+
+body:not([data-screen="landing"]) main {
+    display: none;
+}
+
+body.carousel-takeover main {
+    display: flex;
+}
+
+body.carousel-takeover .landing-buttons,
+body.carousel-takeover .pool-warning {
+    display: none;
+}
+
+.pool-warning {
+    position: absolute;
+    bottom: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--hud-line);
+    background: var(--overlay-dark);
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    z-index: 150;
+}
+
+.pool-warning[hidden] {
+    display: none;
+}
+
+#challenges-button {
+    width: auto;
+    padding: 0.6rem 1.4rem;
+    height: auto;
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+#challenges-button:hover {
+    background: rgba(255, 71, 87, 0.1);
+}
+
+/* ------ Challenge screen shell ------ */
+
+.challenge-screen {
+    position: relative;
+    z-index: 10;
+    box-sizing: border-box;
+    min-height: 100vh;
+    padding: 5.5rem 1.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+/* The global button rule is sized for the landing row's big call-to-action. */
+.challenge-screen button,
+#manage-overlay button {
+    margin: 0;
+    width: auto;
+    height: auto;
+}
+
+.challenge-banner {
+    max-width: 60rem;
+    margin: 0;
+    padding: 0.7rem 1.1rem;
+    border-left: 3px solid var(--primary-color);
+    background: var(--panel);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.challenge-banner[hidden] {
+    display: none;
+}
+
+.challenge-banner--warn {
+    border-left-color: var(--diff-2);
+    color: var(--diff-2);
+}
+
+.challenge-banner--ok {
+    border-left-color: var(--diff-1);
+    color: var(--diff-1);
+}
+
+/* ------ Toast ------
+
+   Attached to <body>, not to a screen: the challenge screen is display:none
+   during the carousel takeover, which is precisely when draw mode's Share
+   button needs to confirm something. */
+
+.vf-toast {
+    position: fixed;
+    left: 50%;
+    /* Top, not bottom: the post-spin button row and the run footer both live at
+       the bottom of the viewport, and a bottom-anchored toast covered them. */
+    top: 5rem;
+    z-index: 9800;
+    padding: 0.7rem 1.2rem;
+    max-width: min(90vw, 34rem);
+    background: var(--overlay-dark);
+    border: 1px solid var(--hud-line);
+    border-left: 3px solid var(--diff-1);
+    color: #fff;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -1rem);
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+.vf-toast.is-on {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.vf-toast--warn {
+    border-left-color: var(--diff-2);
+}
+
+button.is-copied {
+    background: var(--diff-1);
+    border-color: var(--diff-1);
+    color: var(--background-deep);
+}
+
+/* Full-screen BINGO / BLACKOUT flash */
+.challenge-flash {
+    position: fixed;
+    inset: 0;
+    z-index: 9700;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 12vw, 9rem);
+    letter-spacing: 0.2em;
+    color: #fff;
+    background: radial-gradient(
+        ellipse at 50% 50%,
+        rgba(255, 71, 87, 0.35),
+        transparent 65%
+    );
+    pointer-events: none;
+    opacity: 0;
+}
+
+.challenge-flash.is-on {
+    animation: reveal-flash 1.2s ease-out forwards;
+}
+
+/* ------ Mode picker ------ */
+
+body[data-screen="run"] .mode-picker,
+body[data-screen="modes"] .run-root {
+    display: none;
+}
+
+.mode-picker,
+.run-root {
+    width: 100%;
+    max-width: 72rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.picker-header h2,
+.run-title h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    letter-spacing: 0.12em;
+    margin: 0;
+}
+
+.picker-subtitle,
+.run-subtitle {
+    margin: 0.35rem 0 0;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
+
+.mode-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+}
+
+.mode-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: left;
+    padding: 1.1rem 1.2rem;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    color: #fff;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 500;
+    clip-path: polygon(
+        0 0,
+        calc(100% - var(--clip-corner)) 0,
+        100% var(--clip-corner),
+        100% 100%,
+        var(--clip-corner) 100%,
+        0 calc(100% - var(--clip-corner))
+    );
+    transition:
+        border-color 0.2s,
+        background 0.2s;
+}
+
+.mode-card:hover {
+    background: rgba(255, 71, 87, 0.08);
+    border-color: var(--hud-line);
+    animation: none;
+}
+
+.mode-card.is-selected {
+    border-color: var(--primary-color);
+    background: rgba(255, 71, 87, 0.12);
+    box-shadow: 0 0 24px var(--glow-soft);
+}
+
+.mode-card h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+}
+
+.mode-blurb {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+}
+
+.mode-availability {
+    margin-top: auto;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.mode-card.is-short {
+    opacity: 0.55;
+}
+
+.mode-card.is-short .mode-availability {
+    color: var(--diff-2);
+}
+
+.picker-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.picker-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.picker-label {
+    min-width: 6rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.picker-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.picker-toggle {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    background: transparent;
+    border: 1px solid var(--panel-line);
+    color: rgba(255, 255, 255, 0.55);
+    clip-path: none;
+}
+
+.picker-toggle:hover {
+    border-color: var(--hud-line);
+    background: rgba(255, 71, 87, 0.08);
+    animation: none;
+}
+
+.picker-toggle.is-active {
+    border-color: var(--primary-color);
+    background: rgba(255, 71, 87, 0.15);
+    color: #fff;
+}
+
+.tier-toggle--easy.is-active {
+    border-color: var(--diff-1);
+    color: var(--diff-1);
+}
+.tier-toggle--medium.is-active {
+    border-color: var(--diff-2);
+    color: var(--diff-2);
+}
+.tier-toggle--hard.is-active {
+    border-color: var(--diff-3);
+    color: var(--diff-3);
+}
+.tier-toggle--brutal.is-active {
+    border-color: var(--diff-4);
+    color: var(--diff-4);
+}
+
+.picker-blocked {
+    font-size: 0.8rem;
+    color: var(--diff-2);
+}
+
+.manage-notice {
+    margin: 0;
+    padding: 0.5rem 0.7rem;
+    border-left: 3px solid var(--diff-1);
+    background: rgba(76, 214, 160, 0.1);
+    color: var(--diff-1);
+    font-size: 0.8rem;
+}
+
+.manage-notice[hidden] {
+    display: none;
+}
+
+.difficulty-toggle--1.is-active {
+    border-color: var(--diff-1);
+    color: var(--diff-1);
+}
+.difficulty-toggle--2.is-active {
+    border-color: var(--diff-2);
+    color: var(--diff-2);
+}
+.difficulty-toggle--3.is-active {
+    border-color: var(--diff-3);
+    color: var(--diff-3);
+}
+.difficulty-toggle--4.is-active {
+    border-color: var(--diff-4);
+    color: var(--diff-4);
+}
+
+.picker-select,
+.manage-toolbar select,
+.manage-toolbar input,
+.manage-add input,
+.manage-add select {
+    padding: 0.45rem 0.7rem;
+    background: var(--background-end);
+    border: 1px solid var(--panel-line);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+}
+
+.picker-actions,
+.run-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+#challenge-start {
+    padding: 0.75rem 1.8rem;
+    font-size: 0.9rem;
+}
+
+#challenge-start:disabled {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-dim);
+    cursor: not-allowed;
+}
+
+.run-action {
+    padding: 0.55rem 1.1rem;
+    font-size: 0.78rem;
+    background: transparent;
+    border: 1px solid var(--panel-line);
+    color: rgba(255, 255, 255, 0.7);
+    clip-path: none;
+}
+
+.run-action:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    background: rgba(255, 71, 87, 0.1);
+    color: #fff;
+    animation: none;
+}
+
+.run-action--primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.run-action:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ------ Run header ------ */
+
+.run-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+}
+
+.run-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.run-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.run-stat-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.run-stat-value,
+.run-score-value {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    letter-spacing: 0.08em;
+}
+
+.run-stat--score .run-score-value {
+    color: var(--primary-color);
+    text-shadow: 0 0 16px var(--glow-color);
+}
+
+/* ------ Difficulty pip ------ */
+
+.difficulty-pip {
+    display: inline-block;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    flex: none;
+}
+
+.difficulty-pip--1 {
+    background: var(--diff-1);
+}
+.difficulty-pip--2 {
+    background: var(--diff-2);
+}
+.difficulty-pip--3 {
+    background: var(--diff-3);
+}
+.difficulty-pip--4 {
+    background: var(--diff-4);
+    box-shadow: 0 0 8px var(--glow-color);
+}
+
+.challenge-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+/* ------ Challenge icons ------
+
+   Art (agent / ability / weapon) comes from assets/img/icons; anything the art
+   can't cover falls back to a stroked SVG glyph that inherits currentColor. */
+
+.challenge-icon {
+    flex: none;
+    pointer-events: none;
+}
+
+.challenge-icon--art {
+    object-fit: contain;
+}
+
+.challenge-icon--row {
+    width: 1.25rem;
+    height: 1.25rem;
+    opacity: 0.75;
+}
+
+.challenge-icon--inline {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--primary-color);
+    opacity: 0.9;
+}
+
+.challenge-icon--large {
+    width: 3.5rem;
+    height: 3.5rem;
+    color: var(--primary-color);
+}
+
+/* Fills the empty lower half of a bingo tile without taking layout space.
+   Kept well below the text's contrast so it reads as texture, not content. */
+.challenge-icon--watermark {
+    position: absolute;
+    right: -8%;
+    bottom: -6%;
+    width: 68%;
+    height: 68%;
+    opacity: 0.16;
+    color: #fff;
+    z-index: 0;
+}
+
+.bingo-tile.is-marked .challenge-icon--watermark {
+    opacity: 0.28;
+}
+
+/* Everything else in the tile has to sit above the watermark. */
+.bingo-tile-text,
+.bingo-tile .difficulty-pip {
+    position: relative;
+    z-index: 1;
+}
+
+.challenge-points {
+    margin-left: auto;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* ------ Bingo ------ */
+
+.bingo-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    /* Tiles are square, so the grid is as tall as it is wide. Cap the width by
+       the height left over after the header and footer, otherwise a 5x5 card at
+       the full 72rem is taller than the viewport and scrolls the score offscreen
+       — which is exactly the thing you want to watch while playing. */
+    width: 100%;
+    margin: 0 auto;
+    /* Tile text sizes off the grid's real width rather than a fixed rem. The
+       grid grows with viewport height, so on 1440p/4K a fixed rem left the text
+       tiny inside a big tile. */
+    container-type: inline-size;
+}
+
+/* Same cap applied to the whole container, so the header and footer line up
+   with the grid rather than straddling it. */
+.run-root[data-mode="bingo"] {
+    max-width: min(72rem, calc(100vh - 20rem));
+}
+
+.bingo-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.4rem;
+    aspect-ratio: 1;
+    padding: 0.6rem;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    color: rgba(255, 255, 255, 0.85);
+    font-family: var(--font-body);
+    /* A tile is ~19.2cqw wide, so 1.65cqw holds the ratio that reads well at
+       1080p at every resolution above it. */
+    font-size: clamp(0.62rem, 1.65cqw, 1.3rem);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: normal;
+    text-transform: none;
+    text-align: left;
+    clip-path: polygon(
+        0 0,
+        calc(100% - 8px) 0,
+        100% 8px,
+        100% 100%,
+        8px 100%,
+        0 calc(100% - 8px)
+    );
+    transition:
+        background 0.15s,
+        border-color 0.15s;
+    overflow: hidden;
+}
+
+.bingo-tile:hover:not(:disabled) {
+    border-color: var(--hud-line);
+    background: rgba(255, 71, 87, 0.1);
+    animation: none;
+}
+
+.bingo-tile.is-marked {
+    background: var(--tile-marked);
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.bingo-tile.is-marked::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        transparent 45%,
+        rgba(255, 71, 87, 0.25) 50%,
+        transparent 55%
+    );
+    pointer-events: none;
+}
+
+.bingo-tile.in-line {
+    border-color: var(--line-glow);
+    box-shadow: inset 0 0 20px rgba(76, 214, 160, 0.25);
+}
+
+.bingo-tile--free {
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: clamp(0.75rem, 2cqw, 1.6rem);
+    letter-spacing: 0.15em;
+    cursor: default;
+}
+
+.bingo-tile .difficulty-pip {
+    width: clamp(0.4rem, 1.1cqw, 0.85rem);
+    height: clamp(0.4rem, 1.1cqw, 0.85rem);
+}
+
+.bingo-tile-text {
+    overflow-wrap: anywhere;
+}
+
+/* ------ Gauntlet ------ */
+
+.gauntlet-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 2rem;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-left: 3px solid var(--primary-color);
+    min-height: 9rem;
+    justify-content: center;
+}
+
+.gauntlet-body {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.gauntlet-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.gauntlet-index {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.gauntlet-text {
+    margin: 0;
+    font-size: clamp(1.1rem, 3vw, 1.8rem);
+    line-height: 1.3;
+}
+
+.gauntlet-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.gauntlet-action {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.8rem;
+}
+
+.gauntlet-action--skip,
+.gauntlet-action--pause {
+    background: transparent;
+    border: 1px solid var(--panel-line);
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.gauntlet-action:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.gauntlet-history {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
+.history-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.45rem 0.7rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 2px solid transparent;
+    font-size: 0.82rem;
+}
+
+.history-row.is-done {
+    border-left-color: var(--diff-1);
+}
+
+.history-row.is-skipped {
+    border-left-color: rgba(255, 255, 255, 0.15);
+    color: var(--text-dim);
+    text-decoration: line-through;
+}
+
+.history-points {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.gauntlet-summary {
+    text-align: center;
+}
+
+.gauntlet-summary h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0.15em;
+    margin: 0 0 0.5rem;
+}
+
+.gauntlet-summary-score {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    color: var(--primary-color);
+    text-shadow: 0 0 24px var(--glow-color);
+    margin: 0;
+}
+
+.gauntlet-summary-line {
+    margin: 0.2rem 0;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
+
+/* ------ Ruleset contract ------ */
+
+.ruleset-preamble {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
+
+.ruleset-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.ruleset-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.3rem 1.5rem;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-left: 3px solid var(--primary-color);
+    transform: rotate(var(--fan, 0deg));
+}
+
+.ruleset-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.ruleset-index {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--primary-color);
+}
+
+.ruleset-text {
+    margin: 0;
+    font-size: 1.15rem;
+    line-height: 1.35;
+}
+
+/* ------ Single draw ------ */
+
+.draw-result {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-left: 3px solid var(--primary-color);
+}
+
+.draw-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    min-width: 0;
+}
+
+.draw-kicker {
+    font-size: 0.68rem;
+    letter-spacing: 0.25em;
+    color: var(--primary-color);
+}
+
+.draw-text {
+    margin: 0;
+    font-size: clamp(1.1rem, 3vw, 1.8rem);
+    line-height: 1.3;
+}
+
+/* ------ Challenge card faces inside the carousel ------ */
+
+/* Squarer and shorter than an agent card: these hold one sentence, not a
+   full-body render, so the 9:16 frame read as mostly empty. */
+.card--challenge {
+    aspect-ratio: 5 / 6;
+    height: 330px;
+}
+
+@media (max-height: 800px) {
+    .card--challenge {
+        height: 280px;
+    }
+}
+
+.card-content--challenge {
+    /* main.css sets box-sizing on `body` only, and it doesn't inherit — so
+       `width/height: 100%` plus padding pushed the text outside the card. */
+    box-sizing: border-box;
+    justify-content: flex-start;
+    gap: 0.8rem;
+    padding: 1.4rem 1.3rem;
+    text-align: left;
+}
+
+.card-content--challenge header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+/* `.card h1` is absolutely positioned at the card's foot to caption agent art.
+   Inherited here it dropped the RULE/OBJECTIVE label on top of the buttons. */
+.card-content--challenge h1 {
+    position: static;
+    padding: 0;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+}
+
+/* `.card img` in main.css exists to blow agent art up to 150% and centre it.
+   The icon is an <img> too, so it needs opting out of all of that. */
+.card-content--challenge .challenge-icon--large {
+    width: 2.75rem;
+    height: 2.75rem;
+    align-self: flex-start;
+    justify-self: flex-start;
+    object-fit: contain;
+}
+
+.challenge-text {
+    margin: 0;
+    font-size: clamp(1rem, 2.1vh, 1.45rem);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.card-content--challenge .challenge-scope {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+}
+
+.card-content--challenge .challenge-meta {
+    margin-top: auto;
+}
+
+/* ------ Challenge pool overlay ------ */
+
+#manage-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    background: rgba(15, 15, 18, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    padding: 4rem 2rem 1.5rem;
+    box-sizing: border-box;
+    overflow: hidden;
+    gap: 0.75rem;
+}
+
+#manage-overlay[hidden] {
+    display: none;
+}
+
+.selection-count {
+    margin: 0.4rem 0 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.selection-count.is-empty {
+    color: var(--diff-2);
+}
+
+.manage-toolbar {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.manage-toolbar input[type="search"] {
+    flex: 1 1 16rem;
+}
+
+.manage-list {
+    flex: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-height: 6rem;
+}
+
+.manage-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 2px solid transparent;
+}
+
+.manage-row[hidden] {
+    display: none;
+}
+
+.manage-row.is-off {
+    opacity: 0.4;
+    border-left-color: rgba(255, 255, 255, 0.15);
+}
+
+.manage-row-main {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 1;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.manage-row-text {
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+.manage-check {
+    accent-color: var(--primary-color);
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+}
+
+.manage-row-tags {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex: none;
+    /* Fixed width so the pips and type badges line up down the list instead of
+       drifting with each row's agent name. */
+    width: 12rem;
+}
+
+.manage-kind {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    padding: 0.15rem 0.4rem;
+    border: 1px solid var(--panel-line);
+    color: var(--text-dim);
+}
+
+.manage-kind--rule {
+    border-color: rgba(255, 140, 66, 0.4);
+    color: var(--diff-3);
+}
+
+.manage-agent {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--primary-color);
+}
+
+.manage-delete {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.6rem;
+    background: transparent;
+    border: 1px solid var(--panel-line);
+    color: var(--text-dim);
+    clip-path: none;
+}
+
+.manage-delete:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    animation: none;
+}
+
+.manage-add {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.9rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-line);
+}
+
+.manage-add h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+}
+
+.manage-add-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.manage-add-row button[type="submit"] {
+    padding: 0.45rem 1.2rem;
+    font-size: 0.75rem;
+}
+
+.manage-add-hint {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.manage-add-hint code {
+    color: var(--primary-color);
+}
+
+/* ------ Responsive ------ */
+
+@media (max-width: 900px) {
+    .challenge-screen {
+        padding: 4.5rem 0.75rem 2rem;
+    }
+
+    .bingo-grid {
+        gap: 0.3rem;
+    }
+
+    .bingo-tile {
+        padding: 0.35rem;
+        clip-path: none;
+    }
+
+    .run-header {
+        align-items: flex-start;
+    }
+
+    .run-stats {
+        gap: 1rem;
+    }
+
+    .picker-label {
+        min-width: 100%;
+    }
+
+    #manage-overlay {
+        padding: 3.5rem 0.85rem 1rem;
+    }
+
+    .manage-row-tags {
+        width: auto;
+    }
+
+    .gauntlet-body,
+    .draw-result {
+        gap: 1rem;
+    }
+
+    .challenge-icon--large {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
+
+@media (max-width: 560px) {
+    /* The icon costs more than it gives once the text is this narrow. */
+    .gauntlet-body > .challenge-icon,
+    .draw-result > .challenge-icon {
+        display: none;
+    }
+}
+
+@media (max-width: 560px) {
+    .bingo-tile {
+        line-height: 1.15;
+    }
+}
+
+/* Respect reduced motion for everything added above. */
+@media (prefers-reduced-motion: reduce) {
+    .challenge-flash.is-on,
+    .mode-card,
+    .bingo-tile,
+    .ruleset-card {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    .ruleset-card {
+        transform: none;
+    }
+}

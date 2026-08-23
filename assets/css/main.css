@@ -20,6 +20,16 @@
     --clip-corner: 12px;
     --font-body: "Rajdhani", sans-serif;
     --font-display: VALORANT, sans-serif;
+
+    /* Challenge difficulty, 1 (easy) to 4 (brutal) */
+    --diff-1: #4cd6a0;
+    --diff-2: #ffd166;
+    --diff-3: #ff8c42;
+    --diff-4: var(--primary-color);
+    --tile-marked: rgba(255, 71, 87, 0.22);
+    --line-glow: rgba(76, 214, 160, 0.65);
+    --panel: rgba(20, 20, 26, 0.85);
+    --panel-line: rgba(255, 255, 255, 0.08);
 }
 
 /* ------ Base & Atmosphere ------ */
@@ -598,12 +608,22 @@ button {
         var(--clip-corner) 100%,
         0 calc(100% - var(--clip-corner))
     );
+}
+
+/* The staggered entrance belongs to the landing row only. Applying it to every
+   button left the overlay's All/None/Done invisible but clickable for a second
+   after load, so an early click hit a control you couldn't see yet. */
+.landing-buttons button {
     opacity: 0;
     animation: fadeInUp 0.6s 1s forwards;
 }
 
 button:hover {
     background: var(--primary-hover);
+    animation: glitch 0.3s ease;
+}
+
+.landing-buttons button:hover {
     animation:
         glitch 0.3s ease,
         fadeInUp 0.6s 1s forwards;
@@ -660,7 +680,15 @@ button:active {
 
 #post-spin-buttons {
     position: absolute;
-    top: calc(50% + 345px);
+    /* Anchored to the bottom of <main> rather than offset from centre.
+       The old `top: calc(50% + 345px)` was measured against an unscaled 600px
+       card, but .chosen-card is pushed translateZ(200px) into a 800px
+       perspective — a 1.33x zoom — so the landed card is ~800px tall and the
+       buttons sat on top of the agent name. Bottom-anchoring is correct for
+       every card height without a media query per breakpoint. */
+    /* Scales down on short viewports, where the card takes up proportionally
+       more of the screen and a fixed 3rem left the row touching its bottom edge. */
+    bottom: clamp(0.75rem, 3vh, 3rem);
     left: 50%;
     transform: translate(-50%, 15px);
     display: flex;
@@ -677,23 +705,20 @@ button:active {
     }
 }
 
-#spin-again,
+/* Secondary next to #post-challenge-start, so the row has one obvious primary. */
+#spin-again {
+    height: auto;
+    background: var(--background-end);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+#spin-again:hover {
+    background: rgba(255, 71, 87, 0.15);
+}
+
 #post-agents-button {
     height: auto;
-    opacity: 1;
-    animation: none;
-}
-
-@media (max-height: 800px) {
-    #post-spin-buttons {
-        top: calc(50% + 245px);
-    }
-}
-
-@media (max-height: 1200px) and (min-height: 801px) {
-    #post-spin-buttons {
-        top: calc(50% + 295px);
-    }
 }
 
 /* ------ Mute button (header) ------ */
@@ -753,15 +778,40 @@ button:active {
     background: rgba(255, 71, 87, 0.1);
 }
 
-#post-agents-button {
+#post-agents-button,
+#post-challenges-button,
+#post-share-button {
     padding: 0.4rem 1.6rem;
     background: var(--background-end);
     margin: 1rem;
     font-size: 0.8rem;
+    width: auto;
+    height: auto;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
 }
 
-#post-agents-button:hover {
+#post-agents-button:hover,
+#post-challenges-button:hover,
+#post-share-button:hover {
     background: rgba(255, 71, 87, 0.15);
+}
+
+/* The one obvious next step after a spin: play a challenge as this agent.
+   Filled, where its neighbours are outlines. */
+#post-challenge-start {
+    margin: 1rem;
+    padding: 0.4rem 1.8rem;
+    width: auto;
+    height: auto;
+    font-size: 0.8rem;
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: #fff;
+}
+
+#post-challenge-start:hover {
+    background: var(--primary-hover);
 }
 
 /* ------ Selection overlay ------ */
