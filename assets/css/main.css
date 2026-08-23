@@ -680,14 +680,6 @@ button:active {
 
 #post-spin-buttons {
     position: absolute;
-    /* Anchored to the bottom of <main> rather than offset from centre.
-       The old `top: calc(50% + 345px)` was measured against an unscaled 600px
-       card, but .chosen-card is pushed translateZ(200px) into a 800px
-       perspective — a 1.33x zoom — so the landed card is ~800px tall and the
-       buttons sat on top of the agent name. Bottom-anchoring is correct for
-       every card height without a media query per breakpoint. */
-    /* Scales down on short viewports, where the card takes up proportionally
-       more of the screen and a fixed 3rem left the row touching its bottom edge. */
     bottom: clamp(0.75rem, 3vh, 3rem);
     left: 50%;
     transform: translate(-50%, 15px);
@@ -705,7 +697,6 @@ button:active {
     }
 }
 
-/* Secondary next to #post-challenge-start, so the row has one obvious primary. */
 #spin-again {
     height: auto;
     background: var(--background-end);
@@ -797,8 +788,6 @@ button:active {
     background: rgba(255, 71, 87, 0.15);
 }
 
-/* The one obvious next step after a spin: play a challenge as this agent.
-   Filled, where its neighbours are outlines. */
 #post-challenge-start {
     margin: 1rem;
     padding: 0.4rem 1.8rem;
@@ -1229,9 +1218,3 @@ body.spin-active .scan-bar {
         opacity: 0;
     }
 }
-
-/*
- * some inspitarion from / used sources
- * https://kushagra.dev/blog/css-only-3d-card/
- * https://www.youtube.com/watch?v=yqaLSlPOUxM
- */

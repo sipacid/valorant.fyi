@@ -112,8 +112,6 @@
   function start() {
     const pool = VF.agentPool.getPool();
     if (!pool.length) {
-      // The first version silently fell back to the full roster here, which made
-      // the "None" button behave exactly like "All".
       showPoolWarning(true);
       VF.agentPool.open();
       return;
@@ -133,8 +131,6 @@
         showPostSpinButtons([
           { id: "spin-again", label: "Spin Again", onClick: reset },
           {
-            // The primary action: straight into a run with this agent, using
-            // whatever mode and settings were last chosen.
             id: "post-challenge-start",
             label: VF.challenges.quickStartLabel(),
             onClick: () => VF.challenges.quickStart(lastAgent),

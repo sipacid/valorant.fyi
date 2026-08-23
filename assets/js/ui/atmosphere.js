@@ -1,6 +1,3 @@
-// atmosphere.js — the decorative background: scrolling codename feed, scan bar,
-// floating particles, and agent art preloading. All purely cosmetic.
-
 (function (VF) {
   "use strict";
 
@@ -23,7 +20,6 @@
     const columnCount = 7;
 
     for (let c = 0; c < columnCount; c++) {
-      // Alternate scroll direction per column for a busier, more chaotic feel.
       const goesDown = c % 2 === 1;
       const col = VF.el("div", {
         class: goesDown ? "feed-column feed-column--down" : "feed-column",
@@ -32,15 +28,13 @@
       col.style.animationDuration = `${20 + Math.random() * 18}s`;
       col.style.animationDelay = `-${Math.random() * 25}s`;
 
-      // Build the visible list of codenames, then duplicate it so the
-      // translateY(-50%) loop is seamless.
       const names = [];
       for (let i = 0; i < itemsPerColumn; i++) {
         names.push(
           VF.cardsData[Math.floor(Math.random() * VF.cardsData.length)].title.toUpperCase(),
         );
       }
-      for (const name of names.concat(names)) {
+      for (const name of [...names, ...names]) {
         col.appendChild(VF.el("span", { textContent: name }));
       }
 

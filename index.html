@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
     <title>valorant.fyi - Agent roulette &amp; challenges</title>
 
     <meta content="width=device-width, initial-scale=1" name="viewport" />
@@ -10,51 +9,27 @@
       name="description"
       content="Spin for a random Valorant agent, then draw challenges — bingo cards, gauntlet runs and match-long rules. Share a link and everyone gets the same card. This fan-site is not associated with Riot Games."
     />
-    <meta
-      name="keywords"
-      content="Valorant, random agent, Valorant agents, Riot Games, Agent picker, Agent, Random, Valorant challenges, Valorant bingo"
-    />
     <meta name="author" content="girl.lgbt" />
     <meta name="theme-color" content="#ff4757" />
 
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="valorant.fyi — Agent Roulette &amp; Challenges" />
     <meta property="og:description" content="Let fate pick your agent, then draw a challenge card. Bingo, gauntlet or a contract of rules — share the link and race your friends." />
     <meta property="og:url" content="https://valorant.fyi" />
     <meta property="og:site_name" content="valorant.fyi" />
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="valorant.fyi — Agent Roulette &amp; Challenges" />
     <meta name="twitter:description" content="Let fate pick your agent, then draw a challenge card. Bingo, gauntlet or a contract of rules — share the link and race your friends." />
 
-    <link rel="icon" type="image/png" href="./assets/img/favicon.ico" />
+    <link rel="icon" href="./assets/img/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link
-      href="./assets/css/main.css"
-      media="screen"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="./assets/css/challenges.css"
-      media="screen"
-      rel="stylesheet"
-      type="text/css"
-    />
+    <link href="./assets/css/main.css" rel="stylesheet" />
+    <link href="./assets/css/challenges.css" rel="stylesheet" />
 
-    <!--
-      Plain <script> tags rather than ES modules, on purpose: modules are fetched
-      with CORS and break on file:// and on some plain static hosts, and this site
-      has no build step or dev server. The trade-off is that LOAD ORDER MATTERS —
-      each file assigns onto window.VF and may read what came before it. `defer`
-      guarantees in-order execution after parsing.
-
-      vf.js first (creates the namespace), main.js last (wires everything up).
-    -->
+    <!-- Load order matters: vf.js creates the namespace; main.js wires it up. -->
     <script defer src="./assets/js/vf.js"></script>
     <script defer src="./assets/js/data/agents.js"></script>
     <script defer src="./assets/js/data/weapons.js"></script>

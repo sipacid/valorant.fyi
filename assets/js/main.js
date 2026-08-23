@@ -1,6 +1,3 @@
-// main.js — wiring only. Everything else lives in the files loaded before this
-// one; see the script block in index.html for the load order.
-
 (function (VF) {
   "use strict";
 
@@ -9,8 +6,6 @@
   const challengesButton = VF.qs("#challenges-button");
   const muteButton = VF.qs("#mute-button");
 
-  // The old markup used onclick="start()", which only worked because everything
-  // was a true global. It isn't any more.
   if (startButton) startButton.addEventListener("click", VF.spin.start);
   if (agentsButton) agentsButton.addEventListener("click", VF.agentPool.open);
   if (challengesButton) {

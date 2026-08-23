@@ -3,7 +3,7 @@
 (function (VF) {
   "use strict";
 
-  const STORAGE_KEY = "valorant.fyi/included-agents";
+  const STORAGE_KEY = "included-agents";
 
   const selectionOverlay = VF.qs("#selection-overlay");
   const selectionGrid = VF.qs("#selection-grid");
@@ -12,31 +12,18 @@
   const selectionDone = VF.qs("#selection-done");
   const selectionCount = VF.qs("#selection-count");
 
-  /**
-   * Held in memory rather than re-read and re-parsed from localStorage on every
-   * card click, which is what the first version did.
-   */
   let included = load();
   let gridBuilt = false;
   const listeners = new Set();
 
   function load() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return new Set(VF.cardsData.map((c) => c.title));
-      const arr = JSON.parse(raw);
-      return new Set(Array.isArray(arr) ? arr : []);
-    } catch {
-      return new Set(VF.cardsData.map((c) => c.title));
-    }
+    const fallback = VF.cardsData.map((card) => card.title);
+    const stored = VF.store.read(STORAGE_KEY, fallback);
+    return new Set(Array.isArray(stored) ? stored : fallback);
   }
 
   function save() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...included]));
-    } catch {
-      // localStorage may be unavailable; selection just won't persist.
-    }
+    VF.store.write(STORAGE_KEY, [...included]);
     for (const fn of listeners) fn(included);
     syncCount();
   }
@@ -49,10 +36,6 @@
     }
   }
 
-  /**
-   * Built on first open rather than at page load — the old version created all
-   * 29 cards up front even for visitors who never opened the overlay.
-   */
   function buildSelectionGrid() {
     if (!selectionGrid || gridBuilt) return;
     gridBuilt = true;
@@ -67,7 +50,6 @@
       if (!included.has(data.title)) wrap.classList.add("is-out");
       syncPressed(wrap, data.title);
 
-      // Replicate the front-face image into the back face for the grayscale + V design.
       const back = wrap.querySelector(".card-back");
       if (back) {
         back.appendChild(

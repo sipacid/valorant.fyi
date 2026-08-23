@@ -366,8 +366,6 @@
     ]);
 
     const { have, need } = availability(prefs.mode);
-    // "Lock to my agent" with the dropdown still on the placeholder used to be
-    // startable, which produced a locked card with no agent to lock to.
     const needsAgent = prefs.agentMode === 1 && !lockedAgent;
     const blocked = needsAgent || have < need;
 

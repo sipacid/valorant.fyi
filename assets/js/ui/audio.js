@@ -1,17 +1,8 @@
-// audio.js — hand-rolled WebAudio SFX. No library.
-
 (function (VF) {
   "use strict";
 
-  const MUTE_KEY = "valorant.fyi/muted";
-
-  let muted = (() => {
-    try {
-      return localStorage.getItem(MUTE_KEY) === "true";
-    } catch {
-      return false;
-    }
-  })();
+  const MUTE_KEY = "muted";
+  let muted = VF.store.read(MUTE_KEY, false);
 
   let audioCtx = null;
 
@@ -63,7 +54,6 @@
     const tickCount = 16;
     for (let i = 0; i < tickCount; i++) {
       const p = (i + 0.5) / tickCount;
-      // Match the rotation easing — ticks dense at start, sparse at end.
       const t = 1 - Math.pow(1 - p, 2.6);
       const freq = 720 - p * 380;
       playTick(startAt + t * totalSec, freq);
@@ -71,7 +61,6 @@
     playImpact(startAt + totalSec);
   }
 
-  /** One-shot cue used by the challenge modes (line completed, challenge done). */
   function cue(kind) {
     if (muted) return;
     const ctx = getAudioContext();
@@ -98,11 +87,7 @@
     isMuted: () => muted,
     setMuted(value) {
       muted = Boolean(value);
-      try {
-        localStorage.setItem(MUTE_KEY, String(muted));
-      } catch {
-        // localStorage may be unavailable; the choice just won't persist.
-      }
+      VF.store.write(MUTE_KEY, muted);
       return muted;
     },
   };

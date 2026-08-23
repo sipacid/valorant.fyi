@@ -441,3 +441,5 @@ MigrationBackup/
 !.dev.vars.example
 .env*
 !.env.example
+
+.jj

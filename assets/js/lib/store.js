@@ -21,13 +21,11 @@
     } catch {
       raw = null;
     }
-    // Falls through to memory both when storage throws and when a previous
-    // write silently failed, leaving the key absent.
     if (raw === null && memory.has(key)) raw = memory.get(key);
-    if (raw === null || raw === undefined) return fallback;
+    if (raw == null) return fallback;
     try {
       const value = JSON.parse(raw);
-      return value === null || value === undefined ? fallback : value;
+      return value ?? fallback;
     } catch {
       return fallback;
     }
@@ -48,9 +46,7 @@
     memory.delete(key);
     try {
       localStorage.removeItem(PREFIX + key);
-    } catch {
-      // nothing to do
-    }
+    } catch {}
   }
 
   VF.store = { read, write, remove, PREFIX };
