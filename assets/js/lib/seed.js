@@ -14,18 +14,24 @@
   // an older seed would decode into different values for every field after the
   // insertion point, and showing someone a subtly different card is worse than
   // telling them the link is stale.
-  const SEED_FORMAT = 2;
+  //
+  // 3 changed nothing about the layout — it retires every older seed on purpose.
+  // Tile selection gained a per-family cap, so a v2 seed would still decode but
+  // would build a different card than the person who shared it is looking at.
+  // Same reasoning: a dead link beats a silently divergent one.
+  const SEED_FORMAT = 3;
 
   /**
    * Bumped on every catalog append. Baked into the seed so a card made today
    * still regenerates exactly after the catalog grows — see VF.pool.resolve.
    */
-  const CATALOG_VERSION = 1;
+  const CATALOG_VERSION = 2;
 
   const MODES = ["bingo", "draw", "ruleset", "gauntlet"];
 
   const OPT_FREE_CENTER = 1; // bit 0 — bingo's free middle square
-  // bit 1 is spare (it was OPT_BALANCED, now superseded by `tier`)
+  // bit 1 was OPT_BALANCED (superseded by `tier`), reused in format 3.
+  const OPT_NO_MEME = 2; // bit 1 — drop everything tagged `meme` from the pool
 
   /**
    * How hard the card should feel. Independent of `diffMask`: the mask decides
@@ -124,6 +130,7 @@
     MODES,
     TIER_IDS,
     OPT_FREE_CENTER,
+    OPT_NO_MEME,
     FIELDS,
     encodeSeed,
     decodeSeed,

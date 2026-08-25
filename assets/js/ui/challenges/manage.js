@@ -76,6 +76,7 @@
     row.dataset.search = `${entry.text} ${entry.agent ?? ""} ${entry.tags.join(" ")}`.toLowerCase();
     row.dataset.kind = entry.kind;
     row.dataset.custom = String(Boolean(entry.custom));
+    row.dataset.meme = String(entry.tags.includes("meme"));
     return row;
   }
 
@@ -94,9 +95,14 @@
     const query = (searchEl?.value ?? "").trim().toLowerCase();
     const kind = kindEl?.value ?? "all";
     for (const row of rows) {
+      // "custom" and "meme" cut across kind rather than being kinds themselves.
       const matchesKind =
         kind === "all" ||
-        (kind === "custom" ? row.dataset.custom === "true" : row.dataset.kind === kind);
+        (kind === "custom"
+          ? row.dataset.custom === "true"
+          : kind === "meme"
+            ? row.dataset.meme === "true"
+            : row.dataset.kind === kind);
       const matchesQuery = !query || row.dataset.search.includes(query);
       row.hidden = !(matchesKind && matchesQuery);
     }

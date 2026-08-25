@@ -650,6 +650,43 @@ for (let i = 0; i < 400; i++) {
   if (slotTiles === 0) noAgentTiles += 1;
 }
 check("400 agent-locked cards built", lockedSamples === 400, String(lockedSamples));
+
+// How much "lock to my agent" actually buys you, in both pool sizes.
+function agentTileCount({ shared, agent = "Sova", samples = 100 }) {
+  let total = 0;
+  let cards = 0;
+  for (let i = 0; i < samples; i++) {
+    const seedStr = VF.seed.newSeed({ mode: "bingo", agentMode: 1, diffMask: 0b1111, tier: 1, opts: 0 });
+    const seed = VF.seed.decodeSeed(seedStr);
+    let pool;
+    if (shared) {
+      pool = VF.pool.resolve({ seed }).pool;
+    } else {
+      pool = VF.pool.forAgent(VF.pool.resolve({ seed: null, agentMode: 1, diffMask: 0b1111 }).pool, agent);
+    }
+    const state = VF.modes.bingo.build({ seedStr, seed, pool, agent });
+    if (!state) continue;
+    cards += 1;
+    total += state.tiles.filter((id) => {
+      const e = id === "FREE" ? null : VF.catalog.get(id);
+      return e && (e.slots.length > 0 || e.agent);
+    }).length;
+  }
+  return { avg: total / cards, cards };
+}
+
+const localAgent = agentTileCount({ shared: false });
+const sharedAgent = agentTileCount({ shared: true });
+check(
+  "a local agent-locked card is around 40% agent tiles",
+  localAgent.avg >= 9 && localAgent.avg <= 11,
+  localAgent.avg.toFixed(1),
+);
+check(
+  "a shared agent-locked card stays under its thin pool's budget",
+  sharedAgent.avg >= 5 && sharedAgent.avg <= 7,
+  sharedAgent.avg.toFixed(1),
+);
 check(
   "every agent-locked card carries agent-specific tiles",
   noAgentTiles === 0,
@@ -671,6 +708,218 @@ check(
   JSON.stringify(buildBingo(lockedSeed).tiles) === JSON.stringify(buildBingo(lockedSeed).tiles),
 );
 check("agent-locked card has no duplicate tiles", new Set(buildBingo(lockedSeed).tiles).size === 25);
+
+// ------------------------------------------------------------------
+section("family diversity");
+
+// The regression this whole section exists for: a real card came out holding
+// six separate "get 4 kills" tiles. `obj.wpn.kills-in-round` is one generator
+// with 57 entries, so a uniform draw over the pool genuinely produced that.
+
+/** Worst family concentration seen across `samples` cards. */
+function familyProfile({ agentMode = 0, opts = 0, samples = 200 } = {}) {
+  let worst = 0;
+  let worstFamily = null;
+  let cards = 0;
+  let short = 0;
+  for (let i = 0; i < samples; i++) {
+    const state = buildBingo(
+      VF.seed.newSeed({ mode: "bingo", agentMode, diffMask: 0b1111, tier: 1, opts }),
+    );
+    if (!state) continue;
+    cards += 1;
+    if (state.tiles.length !== 25) short += 1;
+    const counts = new Map();
+    for (const id of state.tiles) {
+      if (id === "FREE") continue;
+      const family = VF.catalog.get(id).family;
+      const n = (counts.get(family) ?? 0) + 1;
+      counts.set(family, n);
+      if (n > worst) {
+        worst = n;
+        worstFamily = family;
+      }
+    }
+  }
+  return { worst, worstFamily, cards, short };
+}
+
+const anyAgentFamilies = familyProfile({ agentMode: 0 });
+const lockedFamilies = familyProfile({ agentMode: 1 });
+check("200 any-agent cards built", anyAgentFamilies.cards === 200);
+check("200 agent-locked cards built", lockedFamilies.cards === 200);
+check("cards stay full under the family cap", anyAgentFamilies.short === 0 && lockedFamilies.short === 0);
+check(
+  "no any-agent card takes more than 2 tiles from one family",
+  anyAgentFamilies.worst <= 2,
+  `${anyAgentFamilies.worst}x ${anyAgentFamilies.worstFamily}`,
+);
+check(
+  "no agent-locked card takes more than 2 tiles from one family",
+  lockedFamilies.worst <= 2,
+  `${lockedFamilies.worst}x ${lockedFamilies.worstFamily}`,
+);
+
+// The cap is a target, not a hard guarantee: when a bucket can't fill its quota
+// under the cap, sampleDiverse spills rather than handing back a short card.
+// That happens on local agent-locked cards, whose agent half is 10 tiles drawn
+// from as few as 10 families — and it's harmless there, because three tiles
+// from obj.agent.sage are three different Sage challenges. It must not run away
+// though, so the local case gets its own bound.
+let localWorst = 0;
+let localWorstFamily = null;
+const localBase = VF.pool.resolve({ seed: null, agentMode: 1, diffMask: 0b1111 }).pool;
+for (const title of ["Sage", "Sova", "Astra", "Clove", "Yoru"]) {
+  const agentPool = VF.pool.forAgent(localBase, title);
+  for (let i = 0; i < 40; i++) {
+    const seedStr = VF.seed.newSeed({ mode: "bingo", agentMode: 1, diffMask: 0b1111, tier: 1, opts: 1 });
+    const seed = VF.seed.decodeSeed(seedStr);
+    const state = VF.modes.bingo.build({ seedStr, seed, pool: agentPool, agent: title });
+    const counts = new Map();
+    for (const id of state.tiles) {
+      if (id === "FREE") continue;
+      const family = VF.catalog.get(id).family;
+      const n = (counts.get(family) ?? 0) + 1;
+      counts.set(family, n);
+      if (n > localWorst) {
+        localWorst = n;
+        localWorstFamily = `${title}/${family}`;
+      }
+    }
+  }
+}
+check(
+  "the local agent-locked spill stays bounded at 3",
+  localWorst <= 3,
+  `${localWorst}x ${localWorstFamily}`,
+);
+
+// Every entry needs a family for the cap to mean anything.
+check(
+  "generated entries share a family, literals don't",
+  VF.catalog.get("obj.wpn.kills-in-round/vandal/3").family === "obj.wpn.kills-in-round" &&
+    VF.catalog.get("obj.gen.ace").family === "obj.gen.ace",
+);
+
+// The 4-kill tier is tombstoned, not deleted: gone from today's pool, still
+// resolvable for a card shared before it was retired.
+const fourKills = CATALOG.filter((e) => e.id.startsWith("obj.wpn.kills-in-round/") && e.id.endsWith("/4"));
+check("all 19 four-kill entries still exist as tombstones", fourKills.length === 19, String(fourKills.length));
+check("they are all marked removed in catalog 2", fourKills.every((e) => e.removedIn === 2));
+
+const todaysPool = VF.pool.resolve({ seed: null, agentMode: 0, diffMask: 0b1111 }).pool;
+check(
+  "no four-kill entry survives into a local pool",
+  todaysPool.every((e) => e.removedIn === null),
+);
+
+const catalogOnePool = VF.pool.resolve({
+  seed: VF.seed.decodeSeed(
+    VF.seed.encodeSeed({
+      fmt: VF.seed.SEED_FORMAT,
+      catalog: 1,
+      mode: 0,
+      agentMode: 0,
+      diffMask: 0b1111,
+      tier: 1,
+      opts: 0,
+      nonce: 11,
+    }),
+  ),
+}).pool;
+check(
+  "a catalog-1 seed still sees all 19 of them",
+  fourKills.every((e) => catalogOnePool.some((p) => p.id === e.id)),
+);
+check(
+  "a catalog-1 seed sees nothing added in catalog 2",
+  catalogOnePool.every((e) => e.since <= 1),
+);
+
+// ------------------------------------------------------------------
+section("memes");
+
+const memes = CATALOG.filter((e) => e.tags.includes("meme"));
+check("there are meme objectives, not just meme rules", memes.some((e) => e.kind === "objective"));
+check("meme rules are still there too", memes.some((e) => e.kind === "rule"));
+check(
+  "some meme objectives are sharable",
+  memes.filter((e) => e.kind === "objective" && e.sharable).length >= 10,
+);
+check(
+  "every agent has a meme",
+  VF.cardsData.every((a) => CATALOG.some((e) => e.agent === a.title && e.tags.includes("meme"))),
+  VF.cardsData
+    .filter((a) => !CATALOG.some((e) => e.agent === a.title && e.tags.includes("meme")))
+    .map((a) => a.title)
+    .join(", "),
+);
+check(
+  "agent memes are never sharable",
+  memes.every((e) => !e.agent || !e.sharable),
+);
+
+// Memes are meant to be jokes you play, not typing homework. Everything that
+// asked you to use the chat box or the mic was retired in catalog 2.
+const liveMemes = memes.filter((e) => e.removedIn === null);
+const chatty = liveMemes.filter((e) =>
+  /all-chat|in chat|type |say |out loud|in voice|announce|callout|compliment|praise|narrate/i.test(e.text),
+);
+check(
+  "no live meme asks you to type or talk",
+  chatty.length === 0,
+  chatty.map((e) => e.text).join(" | "),
+);
+check("plenty of memes survived the cull", liveMemes.length >= 40, String(liveMemes.length));
+
+// Retired in catalog 2 for being a scoreboard, not a challenge.
+check("top frag is tombstoned", VF.catalog.get("obj.gen.top-frag").removedIn === 2);
+
+// "Use your C every round of a half" was an objective you couldn't track and
+// couldn't fail cleanly. Same idea, reissued as a rule.
+check(
+  "the every-round objective is retired",
+  CATALOG.filter((e) => e.id.startsWith("obj.slot.every-round/")).every((e) => e.removedIn === 2),
+);
+const everyRoundRules = CATALOG.filter((e) => e.id.startsWith("rule.slot.every-round/"));
+check("it came back as a rule", everyRoundRules.length === 3 && everyRoundRules.every((e) => e.kind === "rule"));
+check("and it still renders the agent's ability name",
+  VF.catalog.renderChallengeText(everyRoundRules[0], VF.AGENTS_BY_TITLE.get("Skye")).includes("Regrowth"),
+  VF.catalog.renderChallengeText(everyRoundRules[0], VF.AGENTS_BY_TITLE.get("Skye")),
+);
+
+const noMemePool = VF.pool.resolve({
+  seed: VF.seed.decodeSeed(
+    VF.seed.newSeed({ mode: "bingo", agentMode: 0, opts: VF.seed.OPT_NO_MEME }),
+  ),
+}).pool;
+check("OPT_NO_MEME empties the memes out of the pool", noMemePool.every((e) => !e.tags.includes("meme")));
+check("OPT_NO_MEME leaves a usable pool", noMemePool.filter((e) => e.kind === "objective").length >= 25);
+
+/** How many of `samples` cards carried at least one meme tile. */
+function memeCardRate(opts) {
+  let withMemes = 0;
+  for (let i = 0; i < 200; i++) {
+    const state = buildBingo(VF.seed.newSeed({ mode: "bingo", agentMode: 0, diffMask: 0b1111, tier: 1, opts }));
+    if (state && state.tiles.some((id) => id !== "FREE" && VF.catalog.get(id).tags.includes("meme"))) {
+      withMemes += 1;
+    }
+  }
+  return withMemes;
+}
+check("memes reach the board by default", memeCardRate(0) > 0);
+check("no meme reaches the board with the toggle on", memeCardRate(VF.seed.OPT_NO_MEME) === 0);
+
+const memeSeed = VF.seed.newSeed({
+  mode: "bingo",
+  agentMode: 1,
+  diffMask: 0b1111,
+  opts: VF.seed.OPT_FREE_CENTER | VF.seed.OPT_NO_MEME,
+});
+check(
+  "the no-meme option is deterministic like every other seed field",
+  JSON.stringify(buildBingo(memeSeed).tiles) === JSON.stringify(buildBingo(memeSeed).tiles),
+);
 
 // ------------------------------------------------------------------
 section("bingo line masks");

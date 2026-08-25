@@ -9,13 +9,17 @@
 
   const QUEUE_LEN = 40; // ~2 draws a round across a 25-round match
 
+  /** Looser than bingo's cap — the queue is 40 long, so 2 would be stifling. */
+  const MAX_PER_FAMILY = 4;
+
   function build({ seedStr, seed, pool, agent }) {
     const objectives = pool.filter((e) => e.kind === "objective");
     if (objectives.length < 5) return null;
 
     const rng = VF.seed.seedRng(seedStr, "gauntlet:queue");
+    const draw = { ...seed, maxPerFamily: MAX_PER_FAMILY, seen: new Map() };
     const queue = VF.runState
-      .pickEntries(objectives, Math.min(QUEUE_LEN, objectives.length), rng, seed)
+      .pickEntries(objectives, Math.min(QUEUE_LEN, objectives.length), rng, draw)
       .map((e) => e.id);
 
     return {

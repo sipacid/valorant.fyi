@@ -6,8 +6,9 @@
   const RUN_KEY = "challenges/run";
   const PREFS_KEY = "challenges/prefs";
   // 2 came with the `tier` seed field. Saved runs from before it hold seeds in
-  // the old layout, so they're dropped rather than misread.
-  const STATE_VERSION = 2;
+  // the old layout, so they're dropped rather than misread. 3 came with seed
+  // format 3, whose seeds no longer decode at all.
+  const STATE_VERSION = 3;
 
   const DEFAULT_PREFS = {
     mode: "bingo",
@@ -130,13 +131,50 @@
   }
 
   /**
+   * Samples `n` entries while taking at most `cap` from any one catalog family.
+   *
+   * Without this a single generator can eat the card: `obj.wpn.kills-in-round`
+   * is 57 of ~590 objectives and used to land four or five "get N <gun> kills"
+   * tiles on the same board, which reads as a bug even though the draw was fair.
+   *
+   * `seen` is threaded in from the caller so the cap is global across the four
+   * difficulty buckets — capping per bucket would still allow cap x 4.
+   * Deterministic: one seededShuffle, then a straight walk.
+   */
+  function sampleDiverse(bucket, n, rng, cap, seen) {
+    if (n <= 0) return [];
+    const shuffled = VF.rng.seededShuffle(bucket, rng);
+    const out = [];
+    const spill = [];
+    for (const entry of shuffled) {
+      const used = seen.get(entry.family) ?? 0;
+      if (out.length < n && used < cap) {
+        out.push(entry);
+        seen.set(entry.family, used + 1);
+      } else {
+        spill.push(entry);
+      }
+    }
+    // A pool narrower than the cap allows still has to fill the card. Breaking
+    // the cap beats handing back a short board.
+    while (out.length < n && spill.length) out.push(spill.shift());
+    return out;
+  }
+
+  /**
    * Picks `count` entries with the tier's difficulty mix applied.
    *
    * Consumes `rng` in a fixed order — buckets 1★ through 4★, then the top-up —
    * so two clients on one seed build the identical card.
+   *
+   * `options.maxPerFamily` caps how much of one catalog family may appear, and
+   * `options.seen` lets a caller share that budget across several calls (bingo
+   * fills its agent quota and its filler separately, but they're one card).
    */
   function pickEntries(entries, count, rng, options) {
     const tier = tierAt(options && options.tier);
+    const cap = (options && options.maxPerFamily) || 0;
+    const seen = (options && options.seen) || new Map();
     const buckets = [1, 2, 3, 4].map((d) => entries.filter((e) => e.difficulty === d));
     const quota = allocateQuota(
       buckets.map((b) => b.length),
@@ -147,7 +185,10 @@
     const picked = [];
     const taken = new Set();
     buckets.forEach((bucket, i) => {
-      for (const entry of VF.rng.seededSample(bucket, quota[i], rng)) {
+      const drawn = cap
+        ? sampleDiverse(bucket, quota[i], rng, cap, seen)
+        : VF.rng.seededSample(bucket, quota[i], rng);
+      for (const entry of drawn) {
         picked.push(entry);
         taken.add(entry.id);
       }
@@ -158,7 +199,12 @@
     // full, even if it drifts off the requested mix.
     if (picked.length < count) {
       const rest = entries.filter((e) => !taken.has(e.id));
-      picked.push(...VF.rng.seededSample(rest, count - picked.length, rng));
+      const short = count - picked.length;
+      picked.push(
+        ...(cap
+          ? sampleDiverse(rest, short, rng, cap, seen)
+          : VF.rng.seededSample(rest, short, rng)),
+      );
     }
 
     return VF.rng.seededShuffle(picked, rng);

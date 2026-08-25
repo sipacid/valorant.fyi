@@ -83,6 +83,23 @@
       difficulty: ({ weapon, n }) =>
         clampDifficulty(n - 1 + (weapon.cat === "Sniper" || weapon.cat === "Shotgun" ? 1 : 0)),
       weapon: ({ weapon }) => weapon.name,
+      // n=4 is an ace with one gun. Priced at 3★ it flooded the bucket it was in
+      // — a Medium card was landing four or five of these — and none of them were
+      // realistically completable. Retired in favour of obj.wpn.kills-spread,
+      // which asks for the same volume across a half instead of one round.
+      removedIn: ({ n }) => (n === 4 ? 2 : null),
+    },
+    {
+      family: "obj.wpn.kills-spread",
+      kind: "objective",
+      scope: "match",
+      tags: ["weapon", "gunplay"],
+      params: { weapon: guns() },
+      id: ({ weapon }) => slugify(weapon.name),
+      text: ({ weapon }) => `Get a ${weapon.name} kill in 3 different rounds`,
+      difficulty: ({ weapon }) => (weapon.cost >= 2400 ? 3 : 2),
+      weapon: ({ weapon }) => weapon.name,
+      since: 2,
     },
     {
       family: "obj.wpn.first-blood",
@@ -129,6 +146,10 @@
     // tile eligibility can't depend on which agent you rolled, and these are the
     // only agent-flavoured tiles that can safely appear on one.
     {
+      // Retired as an objective in catalog 2 and reissued as a rule below. "Every
+      // round of a half" isn't something you complete and tick off, it's a
+      // constraint you play under — and as a tile it was easy to forget halfway
+      // through and impossible to know whether you'd broken.
       family: "obj.slot.every-round",
       kind: "objective",
       scope: "match",
@@ -138,6 +159,20 @@
       text: ({ slot }) => `Use your {${slot}} in every round of a half`,
       slots: ({ slot }) => [slot],
       difficulty: () => 2,
+      removedIn: () => 2,
+    },
+    {
+      family: "rule.slot.every-round",
+      kind: "rule",
+      scope: "match",
+      tags: ["utility", "handicap"],
+      conflictGroup: "utility",
+      params: { slot: ["C", "Q", "E"] },
+      id: ({ slot }) => slot.toLowerCase(),
+      text: ({ slot }) => `Use your {${slot}} every single round, all match`,
+      slots: ({ slot }) => [slot],
+      difficulty: () => 2,
+      since: 2,
     },
     {
       family: "obj.slot.early",
@@ -270,7 +305,9 @@
     o("obj.gen.flawless", "Win a round without your team losing anyone", 2, "round"),
     o("obj.gen.enemy-gun", "Pick up an enemy's gun and get a kill with it", 2, "match"),
     o("obj.gen.save", "Save your gun in a round you've already lost", 1, "match"),
-    o("obj.gen.top-frag", "Top frag the match", 3, "match"),
+    // Retired in catalog 2: not a challenge you can play toward, just a scoreboard
+    // you either finished on top of or didn't.
+    o("obj.gen.top-frag", "Top frag the match", 3, "match", { removedIn: 2 }),
     o("obj.gen.most-assists", "Finish with the most assists on your team", 2, "match"),
     o("obj.gen.op-kill", "Buy an Operator and get at least 2 kills with it", 3, "match"),
     o("obj.gen.retake-win", "Win a retake where your team was down a player", 3, "match"),
@@ -333,22 +370,135 @@
     r("rule.play.shift-in-site", "Always walk once you're inside a site", 3, "movement"),
 
     // --- Meme / social. Tagged so they're easy to switch off in the pool. ---
+    //
+    // The typing/talking ones are retired in catalog 2. A meme should be a joke
+    // you play, not homework in the chat box — and half of them were really
+    // comms rules wearing a meme tag (see rule.play.always-call, ping-first).
     m("meme.spray-on-kill", "Use a spray after every kill", 1),
     m("meme.emote-victim", "Emote on someone you just killed", 2),
-    m("meme.gg-every-round", "Type 'gg' in all-chat after every round you win", 1),
+    m("meme.gg-every-round", "Type 'gg' in all-chat after every round you win", 1, 2),
     m("meme.no-sprays", "Never use a spray all match", 1),
-    m("meme.compliment", "Compliment the enemy who kills you, every time", 1),
+    m("meme.compliment", "Compliment the enemy who kills you, every time", 1, 2),
     m("meme.dance-plant", "Emote immediately after planting the spike", 3),
-    m("meme.announce-ult", "Announce your Ultimate in all-chat before using it", 3),
-    m("meme.name-the-gun", "Give your gun a name and use it in every callout", 1),
-    m("meme.silent-half", "Say nothing at all for an entire half", 2),
-    m("meme.hype-man", "Praise every single teammate kill out loud", 1),
+    m("meme.announce-ult", "Announce your Ultimate in all-chat before using it", 3, 2),
+    m("meme.name-the-gun", "Give your gun a name and use it in every callout", 1, 2),
+    m("meme.silent-half", "Say nothing at all for an entire half", 2, 2),
+    m("meme.hype-man", "Praise every single teammate kill out loud", 1, 2),
     m("meme.spray-tag", "Leave a spray on every site you take", 2),
-    m("meme.thank-the-drop", "Thank whoever drops you a gun, in voice, every time", 1),
+    m("meme.thank-the-drop", "Thank whoever drops you a gun, in voice, every time", 1, 2),
+  ];
+
+  // ------------------------------------------------------------------
+  // Catalog version 2. A separate table purely so the append-only rule is
+  // visible in the diff: nothing above this line may be edited.
+  //
+  // The theme is volume spread over rounds rather than crammed into one. "4 kills
+  // in a round" is an ace with extra steps; "a kill in 3 different rounds" asks
+  // for the same commitment and can actually be finished.
+  // ------------------------------------------------------------------
+
+  const LITERALS_V2 = [
+    // --- Objectives: multi-round and multi-half ---
+    o("obj.gen.assist-2", "Get 2 assists in a single round", 1, "round"),
+    o("obj.gen.assist-spread", "Get an assist in 5 different rounds", 2, "match"),
+    o("obj.gen.streak-3", "Get at least one kill in 3 rounds in a row", 2, "match"),
+    o("obj.gen.multi-two-rounds", "Get a 2K in two different rounds", 2, "match"),
+    o("obj.gen.multi-three-rounds", "Get a 2K in three different rounds", 3, "match"),
+    o("obj.gen.both-halves-multi", "Get a multikill in both halves", 3, "match"),
+    o("obj.gen.half-10", "Get 10 kills in a single half", 3, "match"),
+    o("obj.gen.half-15", "Get 15 kills in a single half", 4, "match"),
+    o("obj.gen.entry-half", "Get the opening kill in 3 rounds of a single half", 4, "match"),
+    o("obj.gen.util-kill-spread", "Get an ability kill in 3 different rounds", 3, "match"),
+    o(
+      "obj.gen.eco-frag-two",
+      "Kill a rifler while you're on a pistol, in two different rounds",
+      2,
+      "match",
+    ),
+    o("obj.gen.knife-two-rounds", "Get a knife kill in two different rounds", 4, "match", {
+      weapon: "Knife",
+    }),
+    o("obj.gen.clutch-two", "Win two 1vX clutches in one match", 4, "match"),
+    // --- Objectives: movement kills. obj.gen.air-kill (catalog 1) is the easy
+    // version of this; these are the ones worth bragging about. ---
+    o("obj.gen.run-and-gun", "Get a run-and-gun kill", 3, "match"),
+    o("obj.gen.run-and-gun-hs", "Get a run-and-gun headshot", 4, "match"),
+    o("obj.gen.air-double", "Get two kills without your feet touching the ground", 4, "round"),
+    o("obj.gen.jump-headshot", "Get a headshot while airborne", 3, "match"),
+
+    // --- Objectives: the whole scoreboard ---
+    o("obj.gen.damage-everyone", "Damage every enemy on the scoreboard at least once", 1, "match"),
+    o("obj.gen.kill-everyone", "Get at least one kill on every enemy in the match", 3, "match"),
+    o("obj.gen.killed-by-everyone", "Get killed by all five enemies at least once", 2, "match"),
+    o("obj.gen.trade-two", "Trade two teammate deaths in the same round", 3, "round"),
+
+    // --- Match-long handicap rules ---
+    r("rule.play.reload-after-kill", "Reload after every single kill, even mid-fight", 2, "aim"),
+    r("rule.play.no-repeat-gun", "Never buy the same gun two rounds in a row", 3, "economy"),
+    r(
+      "rule.play.drop-on-request",
+      "Drop a gun to the first teammate who asks, every round",
+      2,
+      "economy",
+    ),
+    r(
+      "rule.play.classic-penalty",
+      "Die first in a round and you may only buy a Classic the next one",
+      3,
+      "economy",
+    ),
+    r("rule.play.util-before-1min", "Spend every ability before the round timer hits 1:00", 3, "utility"),
+    r("rule.play.different-site", "Play a different site from the round before, every round", 2, "site"),
+    r("rule.play.util-first-peek", "Never peek a new angle without utility going in first", 3, "utility"),
+    r("rule.play.jump-entry", "Jump every time you cross onto a site", 2, "movement"),
+    r(
+      "rule.play.keep-the-pickup",
+      "Any gun you pick up off the ground, you keep until you die",
+      2,
+      "primary-weapon",
+    ),
+    r("rule.play.trade-only", "Never take a fight unless it's a trade", 4, "tempo"),
+    r("rule.play.watch-your-killer", "Always spectate your killer until they die", 1, "comms"),
+
+    // --- Meme rules: things you do with your hands, not your keyboard ---
+    m("meme.crouch-tea", "Crouch three times on every body you kill", 1),
+    m("meme.spawn-spin", "Do a full 360 the moment you spawn each round", 1),
+    m("meme.knife-inspect", "Inspect your knife before every buy phase ends", 1),
+    m("meme.inspect-after-kill", "Inspect your gun after every kill", 1),
+    m("meme.reload-cancel", "Knife-cancel every single reload", 1),
+    m("meme.crouch-walk-round", "Crouch-walk everywhere for one entire round", 2),
+    m("meme.jump-shot", "Jump every time you start shooting", 3),
+    m("meme.backwards-spawn", "Walk backwards out of spawn every round", 2),
+    m("meme.spray-the-spike", "Spray the spike before every plant and every defuse", 2),
+    m("meme.emote-the-buy", "Emote at least once during every buy phase", 1),
+
+    // --- Meme objectives: the reason mo() exists ---
+    mo("meme.obj.emote-body", "Emote on a body and still survive the round", 3, "round"),
+    mo("meme.obj.spray-spike", "Leave a spray on the spike after you plant it", 1, "round"),
+    mo("meme.obj.orb-race", "Beat a teammate to an ult orb", 2, "match"),
+    mo("meme.obj.knife-reloader", "Knife someone while they're reloading", 4, "match", {
+      weapon: "Knife",
+    }),
+    mo("meme.obj.crouch-duel", "Win a duel while crouch-spamming the whole time", 2, "match"),
+    mo("meme.obj.bhop-site", "Bunny hop from spawn onto the site without stopping", 2, "round"),
+    mo("meme.obj.walk-clutch", "Win a clutch while walking the entire round", 4, "match"),
+    mo("meme.obj.dance-off", "Emote at an enemy who emotes back — and you both live", 4, "match"),
+    mo("meme.obj.spike-taunt", "Emote next to a ticking spike, then defuse it", 4, "round"),
+    mo("meme.obj.emote-spawn", "Emote inside the enemy spawn", 4, "match"),
+    mo("meme.obj.waste-ult", "Burn your Ultimate at the start of a round for no reason at all", 2, "match"),
+    mo("meme.obj.spike-blast", "Die to the spike going off", 3, "match"),
+    mo("meme.obj.high-dive", "Jump off the highest thing on the map and survive it", 2, "match"),
+    mo("meme.obj.spike-kill", "Get a kill while carrying the spike", 1, "match"),
+    mo("meme.obj.backwards-round", "Win a round where you only ever walked backwards", 4, "round"),
+    mo("meme.obj.flick-180", "Get a kill off a full 180 flick", 3, "match"),
+    mo("meme.obj.did-nothing", "Win a round in which you did literally nothing", 1, "round"),
+    mo("meme.obj.wrong-gun", "Get a kill with the gun you bought by accident", 2, "match"),
+    mo("meme.obj.window-shopper", "Buy and drop three different guns in one buy phase", 2, "round"),
+    mo("meme.obj.pancake", "Get a kill while falling to your death", 4, "match"),
   ];
 
   /** Meme literal — silly, unverifiable, and the ones people actually remember. */
-  function m(id, text, difficulty) {
+  function m(id, text, difficulty, removedIn) {
     return {
       id,
       kind: "rule",
@@ -357,6 +507,7 @@
       scope: "match",
       tags: ["meme", "social"],
       conflictGroup: null,
+      removedIn: removedIn ?? null,
     };
   }
 
@@ -376,6 +527,25 @@
   /** Objective literal. `extra` can name a weapon so the entry picks up its art. */
   function o(id, text, difficulty, scope, extra) {
     return { id, kind: "objective", text, difficulty, scope, tags: ["general"], ...extra };
+  }
+
+  /**
+   * Meme objective — a silly *one-off*, as opposed to m()'s match-long promise.
+   *
+   * The distinction is load-bearing: bingo and gauntlet only ever draw
+   * `kind: "objective"`, so every meme used to be invisible outside The
+   * Contract. These are the ones that can land on a card.
+   */
+  function mo(id, text, difficulty, scope, extra) {
+    return {
+      id,
+      kind: "objective",
+      text,
+      difficulty,
+      scope: scope ?? "match",
+      tags: ["meme", "social"],
+      ...extra,
+    };
   }
 
   // ------------------------------------------------------------------
@@ -600,6 +770,188 @@
     Yoru: [["full-fake", "Win a round where you faked a site take with FAKEOUT and GATECRASH", 3]],
   };
 
+  /** Third pass — catalog version 2. Same append-only reasoning as above. */
+  const AGENT_COMBOS_3 = {
+    Astra: [
+      ["nebula-fake", "Fake a Nebula and kill whoever peeked it", 3],
+      ["divide-hold", "Cut a site in half with Cosmic Divide and win that round", 3, "round"],
+    ],
+    Breach: [
+      ["double-blind", "Blind two enemies with one Flashpoint and kill them both", 4],
+      ["stun-the-defuse", "Stop a defuse with Aftershock", 2],
+    ],
+    Brimstone: [
+      ["solo-smoker", "Win a round where you smoked both entries by yourself", 2, "round"],
+      ["molly-the-defuse", "Stop a defuse with Incendiary", 2],
+    ],
+    Chamber: [
+      ["trademark-flank", "Catch a flanker with Trademark and kill them", 2],
+      ["headhunter-eco", "Win an eco round off a Headhunter kill", 3],
+    ],
+    Clove: [
+      ["meddle-double-decay", "Decay two enemies with a single Meddle", 2],
+      ["pick-me-up-double", "Take Pick-me-up and get two more kills that round", 3, "round"],
+    ],
+    Cypher: [
+      ["trapwire-double", "Catch two enemies in Trapwires in the same round", 3, "round"],
+      ["cage-clutch", "Win a 1v2 or better using Cyber Cage", 4],
+    ],
+    Deadlock: [
+      ["net-and-trade", "GravNet an entry and let a teammate clean it up", 1],
+      ["sensor-defuse", "Stop a defuse with Sonic Sensor", 3],
+    ],
+    Fade: [
+      ["haunt-into-prowler", "Haunt an enemy, then send a Prowler at the same one", 3, "round"],
+      ["seize-postplant", "Seize the defuser and win the post-plant", 3],
+      ["five-man-haunt", "Reveal all five enemies with a single Haunt", 4],
+    ],
+    Gekko: [
+      ["thrash-take", "Detonate Thrash and take the site on the same push", 3, "round"],
+      ["mosh-defuse", "Stop a defuse with Mosh Pit", 2],
+    ],
+    Harbor: [
+      ["cove-save", "Save a teammate's life with Cove", 2],
+      ["high-tide-cutoff", "Cut off a rotate with High Tide and win the round", 3, "round"],
+    ],
+    Iso: [
+      ["shield-entry", "Entry a site with your Double Tap shield already up", 2],
+      ["undercut-trade", "Undercut an enemy and kill them before it wears off", 2],
+    ],
+    Jett: [
+      ["updraft-op", "Take an Operator shot mid-Updraft and hit it", 4],
+      ["dash-plant", "Dash in, plant the spike, and dash back out alive", 3, "round"],
+    ],
+    "KAY/O": [
+      ["frag-defuse", "Stop a defuse with FRAG/ment", 2],
+      ["suppress-the-ult", "Suppress an enemy before they can use their Ultimate", 4],
+      ["five-man-knife", "Suppress all five enemies with one ZERO/point", 4],
+    ],
+    Killjoy: [
+      ["swarm-postplant", "Get a post-plant kill with Nanoswarm", 2],
+      ["lockdown-clutch", "Win a 1v2 or better off a Lockdown", 4],
+    ],
+    Miks: [
+      ["waveform-entry", "Entry a site behind your own Waveform", 2],
+      ["harmonize-clutch", "Win a clutch with Harmonize active", 3],
+    ],
+    Neon: [
+      ["wall-and-bolt", "Fast Lane in, Relay Bolt the site, take the opening kill", 3, "round"],
+      ["sprint-defuse", "Beat the spike timer to a defuse using High Gear", 3],
+    ],
+    Omen: [
+      ["paranoia-entry", "Paranoia the site and get the opening kill", 2],
+      ["tp-retake", "Teleport onto a planted site and win the retake", 3],
+    ],
+    Phoenix: [
+      ["blaze-topup", "Heal to full off your own Blaze wall and win that round", 2, "round"],
+      ["ult-revenge", "Kill the player who killed you during Run it Back", 3],
+    ],
+    Raze: [
+      ["shells-defuse", "Stop a defuse with Paint Shells", 2],
+      ["rocket-through-smoke", "Get a Showstopper kill through a smoke", 4],
+    ],
+    Reyna: [
+      ["empress-clutch", "Win a 1v2 or better during Empress", 4],
+      ["devour-refight", "Heal to full off Devour and win another fight that round", 2, "round"],
+    ],
+    Sage: [
+      ["wall-plant", "Plant behind your own Barrier Orb and win the round", 2, "round"],
+      ["res-clutch", "Resurrect a teammate mid-clutch and still win it", 4],
+    ],
+    Skye: [
+      ["seekers-clutch", "Find every remaining enemy with Seekers in a clutch and win it", 4],
+      ["regrowth-carry", "Heal a teammate who then wins the round for you", 2],
+    ],
+    Sova: [
+      ["drone-then-dart", "Drone the site, then Shock Bolt someone you found", 3, "round"],
+      ["fury-postplant", "Get a post-plant kill with Hunter's Fury", 3],
+      ["five-man-dart", "Reveal all five enemies with a single Recon Bolt", 4],
+      ["dart-on-a-player", "Stick a Recon Bolt directly onto an enemy", 4],
+    ],
+    Tejo: [
+      ["salvo-defuse", "Stop a defuse with Guided Salvo", 2],
+      ["salvo-both-sites", "Hit both sites with Guided Salvo in one round", 3, "round"],
+      ["five-man-drone", "Reveal all five enemies with one Stealth Drone", 4],
+    ],
+    Veto: [
+      ["crosscut-double", "Get 2 kills with one Crosscut", 4],
+      ["interceptor-clutch", "Win a 1v2 or better with Interceptor up", 3],
+    ],
+    Viper: [
+      ["screen-entry", "Entry through your own Toxic Screen and get the kill", 2],
+      ["pit-retake", "Retake a site with Viper's Pit and win it", 3],
+    ],
+    Vyse: [
+      ["shear-block", "Stop an entry with Shear and win the round", 2, "round"],
+      ["arc-rose-entry", "Get the opening kill off an Arc Rose blind", 3],
+    ],
+    Waylay: [
+      ["saturate-double", "Kill two enemies slowed by one Saturate", 4],
+      ["lightspeed-clutch", "Win a clutch by repositioning with Lightspeed", 3],
+    ],
+    Yoru: [
+      ["clone-flash", "Flash off a FAKEOUT clone and kill someone", 3],
+      ["drift-flank", "Get behind the enemy team in DIMENSIONAL DRIFT and kill two of them", 4],
+      ["clone-walk-in", "Walk a FAKEOUT clone in, let them shoot it, and take the kill", 3, "round"],
+      ["clone-believer", "Get a kill on someone who fully committed to your fake site take", 4],
+    ],
+  };
+
+  /**
+   * Abilities you can get more mileage out of than you can buy — reclaims,
+   * pickups and recharges. Deliberately restricted to agents where it's actually
+   * possible: most utility is one-and-done.
+   */
+  const AGENT_RECHARGE = {
+    Chamber: [["over-budget-trademark", "Place Trademark more times in a round than you bought", 2, "round"]],
+    Cypher: [["over-budget-trapwire", "Place more Trapwires in a round than you bought", 2, "round"]],
+    Gekko: [["over-budget-wingman", "Get more uses out of Wingman in a round than you bought", 3, "round"]],
+    Iso: [["over-budget-shield", "Earn your Double Tap shield back twice in the same round", 4, "round"]],
+    Jett: [["over-budget-dash", "Use Tailwind twice in the same round", 3, "round"]],
+    Killjoy: [["over-budget-turret", "Deploy your TURRET more times in a round than you bought", 2, "round"]],
+    Neon: [["over-budget-slide", "Slide more times in a round than you bought High Gear", 2, "round"]],
+    Reyna: [["over-budget-dismiss", "Use Dismiss three times in a single round", 3, "round"]],
+  };
+
+  /**
+   * Agent memes — catalog version 2. Objectives rather than rules so they can
+   * actually land on a bingo card, and tagged `meme` so the "No meme challenges"
+   * toggle switches them off with everything else.
+   *
+   * Half of these are asking you to throw a round on purpose. That's the point.
+   */
+  const AGENT_MEMES = {
+    Astra: [["gravity-teammate", "Suck a teammate into your Gravity Well", 1]],
+    Breach: [["team-flash", "Flash two teammates and one enemy with a single Flashpoint", 3]],
+    Brimstone: [["lonely-stim", "Stim Beacon a teammate, then let them entry on their own", 1]],
+    Chamber: [["miss-the-ult", "Take Tour De Force and miss every single shot", 2]],
+    Clove: [["too-alive", "Finish the match with more deaths than rounds played", 2]],
+    Cypher: [["stalker", "Watch an enemy on your Spycam for 10 seconds without shooting them", 2]],
+    Deadlock: [["own-goal", "Block your own teammate in with Barrier Mesh", 1]],
+    Fade: [["prowler-friend", "Send a Prowler at a teammate", 1]],
+    Gekko: [["wingman-mvp", "Let Wingman plant the spike while you watch", 2]],
+    Harbor: [["car-wash", "Push a High Tide wall through your entire team", 1]],
+    Iso: [["lost-contract", "Kill Contract someone and lose the duel", 3]],
+    Jett: [["spawn-dash", "Dash into enemy spawn on the first round and die there", 2]],
+    "KAY/O": [["instant-down", "Throw NULL/cmd, get downed immediately, and still win the round", 3]],
+    Killjoy: [["turret-mvp", "Let your TURRET get the last kill of a round", 3]],
+    Miks: [["empty-quake", "Bassquake a site with nobody on it", 1]],
+    Neon: [["slide-into-death", "Slide straight into the whole enemy team and die", 1]],
+    Omen: [["spawn-peek", "Teleport into enemy spawn and get caught", 2]],
+    Phoenix: [["self-curve", "Curveball yourself", 1]],
+    Raze: [["boom-bot-marathon", "Let a Boom Bot chase someone across the whole site and get the kill", 2]],
+    Reyna: [["pointless-dismiss", "Dismiss out of a 1v1 you had already won", 1]],
+    Sage: [["boost-betrayal", "Boost a teammate with Barrier Orb, then let them fall", 1]],
+    Skye: [["wrong-site", "Send Trailblazer to completely the wrong site", 1]],
+    Sova: [["recon-spawn", "Recon Bolt your own spawn", 1]],
+    Tejo: [["empty-armageddon", "Armageddon a site with nobody on it", 2]],
+    Veto: [["doorway-duty", "Chokehold one empty doorway for an entire round", 1]],
+    Viper: [["dry-pit", "Sit in Viper's Pit with nobody anywhere near it", 1]],
+    Vyse: [["own-vine", "Razorvine your own team's entry path", 1]],
+    Waylay: [["refract-regret", "Refract straight back into the spot you were about to die in", 2]],
+    Yoru: [["bad-gatecrash", "Teleport into the enemy team and die on arrival", 2]],
+  };
+
   // ------------------------------------------------------------------
   // Per-agent ability challenges
   //
@@ -721,6 +1073,10 @@
       ...entry,
     };
     e.points = DIFFICULTY_POINTS[e.difficulty];
+    // The generator that produced this entry, used to stop one family taking
+    // over a card (VF.runState.pickEntries). A literal has no `/`, so it is its
+    // own family and can never be capped as a group.
+    e.family = e.id.includes("/") ? e.id.slice(0, e.id.indexOf("/")) : e.id;
     // Sharability — the structural fix for cross-player desync. A shared card may
     // only hold tiles that are identically eligible for every player, whatever
     // agent they rolled. C/Q/E/X exist on all 29 agents; `passive` does not, and
@@ -753,6 +1109,10 @@
             weapon: pick(generator.weapon, params, null),
             role: pick(generator.role, params, null),
             conflictGroup: generator.conflictGroup ?? null,
+            // Both can be per-param, so a generator can ship or retire part of
+            // its own family without disturbing the ids around it.
+            since: pick(generator.since, params, 1),
+            removedIn: pick(generator.removedIn, params, null),
           }),
         );
       }
@@ -760,20 +1120,33 @@
 
     for (const literal of LITERALS) out.push(finalize(literal));
 
+    for (const literal of LITERALS_V2) out.push(finalize({ ...literal, since: 2 }));
+
     for (const entry of expandAbilityChallenges()) out.push(finalize(entry));
 
-    for (const table of [AGENT_COMBOS, AGENT_COMBOS_2]) {
+    // Each table carries its own prefix, tags and catalog version, so a later
+    // pass never has to touch an earlier one.
+    const AGENT_TABLES = [
+      { table: AGENT_COMBOS, prefix: "obj.agent", tags: ["agent", "utility"], since: 1 },
+      { table: AGENT_COMBOS_2, prefix: "obj.agent", tags: ["agent", "utility"], since: 1 },
+      { table: AGENT_COMBOS_3, prefix: "obj.agent", tags: ["agent", "utility"], since: 2 },
+      { table: AGENT_RECHARGE, prefix: "obj.agent", tags: ["agent", "utility"], since: 2 },
+      { table: AGENT_MEMES, prefix: "meme.agent", tags: ["agent", "meme", "social"], since: 2 },
+    ];
+
+    for (const { table, prefix, tags, since } of AGENT_TABLES) {
       for (const [agent, combos] of Object.entries(table)) {
         for (const [suffix, text, difficulty, scope] of combos) {
           out.push(
             finalize({
-              id: `obj.agent.${slugify(agent)}/${suffix}`,
+              id: `${prefix}.${slugify(agent)}/${suffix}`,
               kind: "objective",
               text,
               difficulty,
               scope: scope ?? "match",
-              tags: ["agent", "utility"],
+              tags,
               agent,
+              since,
             }),
           );
         }
@@ -798,6 +1171,10 @@
       if (!/^[a-z0-9./_-]+$/.test(e.id)) problems.push(`malformed id: ${e.id}`);
       if (!DIFFICULTY_POINTS[e.difficulty]) problems.push(`bad difficulty: ${e.id}`);
       if (e.since > VF.seed.CATALOG_VERSION) problems.push(`since is in the future: ${e.id}`);
+      if (e.removedIn !== null && e.removedIn <= e.since) {
+        problems.push(`removed before it shipped: ${e.id}`);
+      }
+      if (!e.family) problems.push(`no family: ${e.id}`);
       const used = [...e.text.matchAll(SLOT_RE)].map((m) => m[1]);
       for (const slot of used) {
         if (!e.slots.includes(slot)) problems.push(`undeclared slot {${slot}} in ${e.id}`);

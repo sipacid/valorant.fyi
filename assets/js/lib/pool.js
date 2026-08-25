@@ -54,10 +54,10 @@
   }
 
   /**
-   * @param {{seed: Object|null, agentMode?: number, diffMask?: number}} options
-   * @returns {{pool: Object[], shared: boolean, agentMode: number, diffMask: number}}
+   * @param {{seed: Object|null, agentMode?: number, diffMask?: number, opts?: number}} options
+   * @returns {{pool: Object[], shared: boolean, agentMode: number, diffMask: number, opts: number}}
    */
-  function resolve({ seed = null, agentMode = 0, diffMask = 0b1111 } = {}) {
+  function resolve({ seed = null, agentMode = 0, diffMask = 0b1111, opts = 0 } = {}) {
     const { CATALOG } = VF.catalog;
     const shared = seed !== null;
     let pool;
@@ -73,6 +73,7 @@
       );
       agentMode = seed.agentMode;
       diffMask = seed.diffMask;
+      opts = seed.opts;
     } else {
       const disabled = getDisabled();
       pool = CATALOG.filter((e) => e.removedIn === null && !disabled.has(e.id)).concat(
@@ -82,6 +83,10 @@
 
     pool = pool.filter((e) => diffMask & (1 << (e.difficulty - 1)));
 
+    // Memes ride in the seed rather than local prefs: they're sharable entries
+    // now, so a lobby has to agree on whether they're in play.
+    if (opts & VF.seed.OPT_NO_MEME) pool = pool.filter((e) => !e.tags.includes("meme"));
+
     if (agentMode === 0) {
       // "Any agent" — nothing that depends on which agent you're playing.
       pool = pool.filter((e) => !e.slots.length && !e.agent && !e.role);
@@ -89,7 +94,7 @@
 
     // Canonical order. The seeded shuffle consumes this positionally, so two
     // clients must build the identical array before shuffling.
-    return { pool: pool.sort(byId), shared, agentMode, diffMask };
+    return { pool: pool.sort(byId), shared, agentMode, diffMask, opts };
   }
 
   /**

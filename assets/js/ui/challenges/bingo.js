@@ -30,8 +30,30 @@
   const completedLines = (marks) => LINE_MASKS.filter((mask) => (marks & mask) === mask);
   const isBlackout = (marks) => (marks & FULL) === FULL;
 
-  /** Roughly a fifth of the card, so "lock to my agent" visibly means something. */
-  const AGENT_TILE_SHARE = 0.2;
+  /**
+   * How much of an agent-locked card is agent-flavoured. Two fifths, because at
+   * a fifth "lock to my agent" bought you five tiles out of 25 and barely read
+   * as a different mode.
+   */
+  const AGENT_TILE_SHARE = 0.4;
+
+  /**
+   * ...but never more than this fraction of the agent material available.
+   *
+   * The two cases are very different sizes. A local run has 22-39 entries for
+   * the agent it's locked to, so it can spend freely. A *shared* locked card can
+   * only use the 11 universal {slot} templates — agent-named tiles aren't
+   * identical for every player on the link — and taking 10 of 11 would make
+   * every shared locked card the same card.
+   */
+  const AGENT_POOL_SHARE = 0.6;
+
+  /**
+   * At most two tiles from any one catalog family. A 25-tile card that's a third
+   * "get N <gun> kills in a round" is technically a fair draw and unplayable in
+   * practice — see VF.runState.pickEntries.
+   */
+  const MAX_PER_FAMILY = 2;
 
   /**
    * On an agent-locked card, reserve a quota of slot-template tiles.
@@ -44,7 +66,10 @@
    * on one seed still build the identical card.
    */
   function pickTiles(objectives, need, rng, opts, agentMode) {
-    if (agentMode !== 1) return VF.runState.pickEntries(objectives, need, rng, opts);
+    // One budget for the whole card: the two halves below draw separately but
+    // must not each spend the family cap.
+    const draw = { ...opts, maxPerFamily: MAX_PER_FAMILY, seen: new Map() };
+    if (agentMode !== 1) return VF.runState.pickEntries(objectives, need, rng, draw);
 
     // Agent flavour now comes from two places: universal {slot} templates (the
     // only kind a shared card can carry) and the per-agent ability challenges
@@ -52,13 +77,16 @@
     const isAgentFlavoured = (e) => e.slots.length > 0 || Boolean(e.agent);
     const slotted = objectives.filter(isAgentFlavoured);
     const rest = objectives.filter((e) => !isAgentFlavoured(e));
-    const want = Math.min(slotted.length, Math.round(need * AGENT_TILE_SHARE));
-    if (!want) return VF.runState.pickEntries(objectives, need, rng, opts);
+    const want = Math.min(
+      Math.floor(slotted.length * AGENT_POOL_SHARE),
+      Math.round(need * AGENT_TILE_SHARE),
+    );
+    if (!want) return VF.runState.pickEntries(objectives, need, rng, draw);
 
     // The tier applies to both halves, so reserving agent tiles doesn't quietly
     // soften a Hard card.
-    const agentTiles = VF.runState.pickEntries(slotted, want, rng, opts);
-    const filler = VF.runState.pickEntries(rest, need - agentTiles.length, rng, opts);
+    const agentTiles = VF.runState.pickEntries(slotted, want, rng, draw);
+    const filler = VF.runState.pickEntries(rest, need - agentTiles.length, rng, draw);
     return VF.rng.seededShuffle(agentTiles.concat(filler), rng);
   }
 

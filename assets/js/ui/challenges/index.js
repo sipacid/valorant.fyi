@@ -25,9 +25,9 @@
    * builds the identical card) or *local* (your disabled list and your custom
    * challenges apply, but the card can't be shared). You can't have both.
    */
-  function poolFor({ seedObj, local, agentMode, diffMask, agent }) {
+  function poolFor({ seedObj, local, agentMode, diffMask, opts, agent }) {
     if (!local) return VF.pool.resolve({ seed: seedObj }).pool;
-    const { pool } = VF.pool.resolve({ seed: null, agentMode, diffMask });
+    const { pool } = VF.pool.resolve({ seed: null, agentMode, diffMask, opts });
     return agentMode === 1 ? VF.pool.forAgent(pool, agent) : pool;
   }
 
@@ -46,6 +46,7 @@
       local: prefs.local,
       agentMode: prefs.agentMode,
       diffMask: prefs.diffMask,
+      opts: prefs.opts,
       agent: lockedAgent,
     });
     const usable =
@@ -72,6 +73,7 @@
       local: prefs.local,
       agentMode: prefs.agentMode,
       diffMask: prefs.diffMask,
+      opts: prefs.opts,
       agent: lockedAgent,
     });
     const state = mode.build({
@@ -129,6 +131,7 @@
           local: state.local,
           agentMode: seedObj.agentMode,
           diffMask: seedObj.diffMask,
+          opts: seedObj.opts,
           agent: state.agent,
         });
       },
@@ -354,6 +357,11 @@
       VF.el("div", { class: "picker-controls" }, [
         toggle("Free centre square", Boolean(prefs.opts & VF.seed.OPT_FREE_CENTER), () => {
           prefs.opts ^= VF.seed.OPT_FREE_CENTER;
+          VF.runState.savePrefs(prefs);
+          renderPicker();
+        }),
+        toggle("No meme challenges", Boolean(prefs.opts & VF.seed.OPT_NO_MEME), () => {
+          prefs.opts ^= VF.seed.OPT_NO_MEME;
           VF.runState.savePrefs(prefs);
           renderPicker();
         }),
