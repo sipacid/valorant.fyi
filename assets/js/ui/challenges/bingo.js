@@ -130,6 +130,8 @@
     root.innerHTML = "";
 
     const scoreEl = VF.el("span", { class: "run-score-value" });
+    const setScore = VF.tamper.watchScore(scoreEl);
+    api.onTeardown(setScore.stop);
     const linesEl = VF.el("span", { class: "run-stat-value" });
     const header = VF.el("div", { class: "run-header" }, [
       VF.el("div", { class: "run-title" }, [
@@ -214,7 +216,7 @@
     }
 
     function sync() {
-      scoreEl.textContent = String(score(state));
+      setScore(score(state));
       const lines = completedLines(state.marks);
       linesEl.textContent = `${lines.length} / ${LINE_MASKS.length}`;
       const inLine = new Set();

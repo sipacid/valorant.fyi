@@ -86,6 +86,8 @@
     root.innerHTML = "";
 
     const scoreEl = VF.el("span", { class: "run-score-value" });
+    const setScore = VF.tamper.watchScore(scoreEl);
+    api.onTeardown(setScore.stop);
     const timerEl = VF.el("span", { class: "run-stat-value" });
     const doneEl = VF.el("span", { class: "run-stat-value" });
 
@@ -220,7 +222,7 @@
     }
 
     function sync() {
-      scoreEl.textContent = String(state.score);
+      setScore(state.score);
       doneEl.textContent = String(state.completed.length);
       timerEl.textContent = VF.runState.formatDuration(elapsedMs(state));
       pauseBtn.textContent = state.pausedAt ? "Resume" : "Pause";

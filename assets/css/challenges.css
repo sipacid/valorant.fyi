@@ -177,6 +177,32 @@ button.is-copied {
     animation: reveal-flash 1.2s ease-out forwards;
 }
 
+/* ------ Caught editing the score (see tamper.js) ------ */
+
+body.is-busted {
+    animation: cheat-wobble 2.5s ease-in-out infinite;
+}
+
+@keyframes cheat-wobble {
+    0% {
+        transform: rotate(180deg) scale(1);
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        transform: rotate(183deg) scale(1.02);
+        filter: hue-rotate(180deg);
+    }
+    100% {
+        transform: rotate(177deg) scale(1);
+        filter: hue-rotate(360deg);
+    }
+}
+
+body.is-busted .run-score-value {
+    color: var(--diff-4);
+    animation: glitch 0.18s steps(2, end) infinite;
+}
+
 /* ------ Mode picker ------ */
 
 body[data-screen="run"] .mode-picker,
@@ -1198,5 +1224,16 @@ body[data-screen="modes"] .run-root {
 
     .ruleset-card {
         transform: none;
+    }
+
+    /* Keep the joke, drop the motion. */
+    body.is-busted,
+    body.is-busted .run-score-value {
+        animation: none !important;
+    }
+
+    body.is-busted {
+        transform: rotate(180deg);
+        filter: invert(1);
     }
 }
